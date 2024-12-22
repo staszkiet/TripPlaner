@@ -3,6 +3,7 @@ import 'package:tripplaner/trip.dart';
 import 'package:provider/provider.dart';
 import 'package:tripplaner/tripCreationForm.dart';
 import 'package:tripplaner/tripPage.dart';
+
 class TripListPage extends StatelessWidget {
   const TripListPage({super.key});
 
@@ -12,20 +13,26 @@ class TripListPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your trips"),
-                leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Go back to the previous page
-          }),
+        leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context); // Go back to the previous page
+            }),
         actions: [
           IconButton(
               onPressed: () => print("pressed"), icon: const Icon(Icons.person))
         ],
       ),
-      body: ListView.builder(
+      body: ListView.separated(
         itemCount: trips.items.length,
         itemBuilder: (context, index) {
           return TripListElement(trip: trips.items[index]);
+        },
+        separatorBuilder: (context, index) {
+          return Divider(
+            color: Colors.grey,
+            thickness: 1,
+          ); // You can customize the separator
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -77,7 +84,14 @@ class TripListElementNarrowLayout extends StatelessWidget {
           Text(
               "${trip.start.day}/${trip.start.month}/${trip.start.year} - ${trip.finish.day}/${trip.finish.month}/${trip.finish.year}")
         ]),
-        IconButton(onPressed: () {}, icon: Icon(Icons.arrow_right_alt_rounded)),
+                IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
+              );
+            },
+            icon: Icon(Icons.arrow_right_alt_rounded)),
       ]),
     );
   }
@@ -100,9 +114,14 @@ class TripListElementWideLayout extends StatelessWidget {
         ),
         Text(
             "${trip.start.day}/${trip.start.month}/${trip.start.year} - ${trip.finish.day}/${trip.finish.month}/${trip.finish.year}"),
-        IconButton(onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => TripPage(trip: trip)),);
-        }, icon: Icon(Icons.arrow_right_alt_rounded)),
+        IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
+              );
+            },
+            icon: Icon(Icons.arrow_right_alt_rounded)),
       ]),
     );
   }
