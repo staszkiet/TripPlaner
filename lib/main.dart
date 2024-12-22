@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:tripplaner/tripListPage.dart';
+import 'package:tripplaner/globalProviders.dart';
 void main() {
-  runApp(const MyApp());
+  runApp(const GlobalProviders( child:MyApp() ));
 }
 
 class MyApp extends StatelessWidget {
@@ -10,10 +11,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.red,
+    return const MaterialApp(
+      home: TripListPage(),
     );
- 
   }
 }
 
