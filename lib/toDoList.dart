@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tripplaner/firestore.dart';
 
 class ToDoElement {
   final String description;
   bool done = false;
-  ToDoElement({required this.description, bool done = false})
-  {
+  String id = "";
+  ToDoElement({required this.description, bool done = false, this.id = ""}) {
     this.done = done;
   }
 
-    factory ToDoElement.fromJson(Map<String, dynamic> json) {
+  factory ToDoElement.fromJson(Map<String, dynamic> json, String id) {
     return ToDoElement(
       description: json['description'],
-      done: json['done'] ?? false, // Default to false if 'done' is missing
+      done: json['done'] ?? false,
+      id:id
     );
   }
 
-    Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       "description": description,
       "done": done,
@@ -25,15 +27,14 @@ class ToDoElement {
 }
 
 class ToDoListPage extends StatefulWidget {
-  const ToDoListPage({super.key});
+  const ToDoListPage({super.key, required this.tripId});
 
+  final String tripId;
   @override
   State<ToDoListPage> createState() => _ToDoListPageState();
 }
 
 class ToDoListProvider with ChangeNotifier {
-
-  
   List<ToDoElement> doneElements = [];
   List<ToDoElement> notDoneElements = [];
 
@@ -59,10 +60,10 @@ class ToDoListProvider with ChangeNotifier {
 
 class _ToDoListPageState extends State<ToDoListPage> {
   final _nameController = TextEditingController();
-
+  final firestoreService = FirestoreService();
   @override
   Widget build(BuildContext context) {
-    final todo = context.watch<ToDoListProvider>();
+    //final todo = context.watch<ToDoListProvider>();
     return Scaffold(
         appBar: AppBar(
           title: Text("TODO List"),
@@ -75,11 +76,25 @@ class _ToDoListPageState extends State<ToDoListPage> {
                     child: Column(children: [
                   Text("TODO"),
                   Expanded(
-                      child: ListView.builder(
-                    itemBuilder: (context, index) =>
-                        ToDoElementWidget(element: todo.notDoneElements[index]),
-                    itemCount: todo.notDoneElements.length,
-                  )),
+                    child: StreamBuilder(
+                        stream:
+                            firestoreService.getToDoUndoneStream(widget.tripId),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            final elements = snapshot.data!.docs;
+                            return ListView.builder(
+                              itemBuilder: (context, index) =>
+                                  ToDoElementWidget(
+                                      element: ToDoElement.fromJson(
+                                          elements[index].data()
+                                              as Map<String, dynamic>, elements[index].id), tripId: widget.tripId,),
+                              itemCount: elements.length,
+                            );
+                          } else {
+                            return Container();
+                          }
+                        }),
+                  )
                 ])),
                 VerticalDivider(
                   color: Colors.grey,
@@ -90,11 +105,25 @@ class _ToDoListPageState extends State<ToDoListPage> {
                     child: Column(children: [
                   Text("DONE"),
                   Expanded(
-                    child: ListView.builder(
-                      itemBuilder: (context, index) => ToDoDoneElementWidget(
-                          element: todo.doneElements[index]),
-                      itemCount: todo.doneElements.length,
-                    ),
+                    child: StreamBuilder(
+                        stream:
+                            firestoreService.getToDoDoneStream(widget.tripId),
+                        builder: (context, snapshot) {
+                          if(snapshot.hasData)
+                          {
+                            final elements = snapshot.data!.docs;
+                            return ListView.builder(
+                            itemBuilder: (context, index) =>
+                                ToDoDoneElementWidget(
+                                    element: ToDoElement.fromJson(elements[index].data() as Map<String, dynamic>, elements[index].id), tripId: widget.tripId,),
+                            itemCount: elements.length
+                          );
+                          }
+                          else
+                          {
+                            return Container();
+                          }
+                        }),
                   )
                 ]))
               ]),
@@ -106,9 +135,10 @@ class _ToDoListPageState extends State<ToDoListPage> {
                 decoration: InputDecoration(hintText: "Add task"),
               )),
               IconButton(
-                  onPressed: () {
-                    todo.addItem(
-                        ToDoElement(description: _nameController.text));
+                  onPressed: () async{
+                    ToDoElement t = ToDoElement(description: _nameController.text);
+                    String id = await firestoreService.addToDoUndoneItem(widget.tripId, t);
+                    t.id = id;
                     _nameController.text = "";
                   },
                   icon: Icon(Icons.done))
@@ -119,8 +149,8 @@ class _ToDoListPageState extends State<ToDoListPage> {
 }
 
 class ToDoElementWidget extends StatefulWidget {
-  const ToDoElementWidget({super.key, required this.element});
-
+  const ToDoElementWidget({super.key, required this.element, required this.tripId});
+  final String tripId;
   final ToDoElement element;
   @override
   State<ToDoElementWidget> createState() => _ToDoElementWidgetState();
@@ -130,9 +160,7 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
   bool notificationOn = false;
 
   @override
-  Widget build(BuildContext context) {
-    final todo = context.watch<ToDoListProvider>();
-    return Padding(
+  Widget build(BuildContext context) {    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Container(
         decoration: BoxDecoration(
@@ -152,8 +180,9 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {
-                      todo.markItemAsDone(widget.element);
+                    onPressed: () async{
+                      final id = await FirestoreService().markItemAsDone(widget.tripId, widget.element);
+                      widget.element.id = id;
                     },
                     icon: Icon(Icons.done),
                   ),
@@ -178,28 +207,35 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
 }
 
 class ToDoDoneElementWidget extends StatelessWidget {
-  const ToDoDoneElementWidget({super.key, required this.element});
+  const ToDoDoneElementWidget({super.key, required this.element, required this.tripId});
+  final String tripId;
   final ToDoElement element;
   @override
   Widget build(BuildContext context) {
     final todo = context.watch<ToDoListProvider>();
     return Padding(
-        padding: EdgeInsets.symmetric(vertical:8.0, horizontal: 16.0),
+        padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         child: Container(
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Padding(padding: EdgeInsets.all(8.0), child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(element.description, style: TextStyle(fontSize: 16),),
-                  IconButton(
-                    onPressed: () {
-                      todo.markItemAsUndone(element);
-                    },
-                    icon: Icon(Icons.cancel),
-                  ),
-                ]))));
+            child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        element.description,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      IconButton(
+                        onPressed: () async{
+                           final id = await FirestoreService().markItemAsUndone(tripId, element);
+                           element.id = id;
+                        },
+                        icon: Icon(Icons.cancel),
+                      ),
+                    ]))));
   }
 }

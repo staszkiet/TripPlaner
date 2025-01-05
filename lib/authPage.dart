@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
 import 'package:tripplaner/tripListPage.dart';
-import 'package:tripplaner/trip.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthPage extends StatelessWidget {
   @override
@@ -65,20 +62,6 @@ class _LoginFormState extends State<LoginForm> {
   final _passwordController = TextEditingController();
   bool _passwordVisible = false;
 
-  Future<List<Trip>> fetchTrips() async {
-  try {
-    final QuerySnapshot snapshot = 
-        await FirebaseFirestore.instance.collection('Trips').get();
-
-    return snapshot.docs.map((doc) {
-      return Trip.fromJson(doc.data() as Map<String, dynamic>);
-    }).toList();
-  } catch (e) {
-    print('Error fetching trips: $e');
-    return [];
-  }
-}
-
   Future<void> login(
       {required BuildContext context,
       required String email,
@@ -88,7 +71,7 @@ class _LoginFormState extends State<LoginForm> {
         email: email,
         password: password,
       );
-      final trips = await fetchTrips();
+     // final trips = await fetchTrips();
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => TripListPage()));
     } catch (e) {}

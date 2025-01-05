@@ -4,6 +4,7 @@ import 'package:tripplaner/trip.dart';
 import 'package:tripplaner/tripCreationForm.dart';
 import 'package:tripplaner/tripPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tripplaner/day.dart';
 
 class TripListPage extends StatelessWidget {
   const TripListPage({super.key});
@@ -17,7 +18,7 @@ class TripListPage extends StatelessWidget {
         title: const Text("Your trips"),
       ),
       body: StreamBuilder<QuerySnapshot>(
-          stream: firestoreService.getTrips(),
+          stream: firestoreService.getTripsStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -37,8 +38,7 @@ class TripListPage extends StatelessWidget {
                   DocumentSnapshot document = trips[index];
                   Map<String, dynamic> data =
                       document.data() as Map<String, dynamic>;
-                  Trip t = Trip.fromJson(data);
-                  t.id = document.id;
+                  Trip t = Trip.fromJson(data, document.id);
                   return TripListElement(trip: t);
                 },
                 separatorBuilder: (context, index) {
@@ -54,7 +54,8 @@ class TripListPage extends StatelessWidget {
           final t = await Navigator.push<Trip>(context,
               MaterialPageRoute(builder: (context) => TripCreationForm()));
           if (t != null) {
-           await firestoreService.addTrip(t);
+           String id = await firestoreService.addTrip(t);
+           t.id = id;
           }
         },
         child: Icon(Icons.add),
@@ -113,7 +114,10 @@ class TripListElementNarrowLayout extends StatelessWidget {
             ),
             Flexible(
               child: IconButton(
-                  onPressed: () {
+                  onPressed: () async{
+                    final firestoreService = FirestoreService();
+                    List<Day> d = await firestoreService.fetchDaysWithAttractions(trip.id);
+                    trip.days = d;
                     Navigator.push(
                       context,
                       MaterialPageRoute(

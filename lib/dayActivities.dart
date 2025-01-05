@@ -10,9 +10,10 @@ class Attraction extends Activity
   double price;
   String currency;
   LatLng? location;
-  Attraction(this.name, {this.start, this.end, this.price = 0, this.currency = "zl", this.location});
+  String id = "";
+  Attraction(this.name, {this.start, this.end, this.price = 0, this.currency = "zl", this.location, this.id = ""});
 
-    factory Attraction.fromJson(Map<String, dynamic> json) {
+    factory Attraction.fromJson(Map<String, dynamic> json, String id) {
     return Attraction(
       json['name'],
       start: json['start'] != null
@@ -26,6 +27,7 @@ class Attraction extends Activity
       location: json['location'] != null
           ? LatLng(json['location']['latitude'], json['location']['longitude'])
           : null,
+        id:id
     );
   }
 
@@ -43,27 +45,6 @@ class Attraction extends Activity
   }
 }
 
-class AttractionProvider with ChangeNotifier {
-  List<Attraction> items = [];
-
-  void addItem(Attraction a) {
-    items.add(a);
-    notifyListeners(); 
-  }
-
-  void deleteItem(Attraction a)
-  {
-    items.remove(a);
-    notifyListeners();
-  }
-
-  void replaceItem(Attraction incoming, Attraction out)
-  {
-    int idx = items.indexOf(out);
-    items[idx] = incoming;
-    notifyListeners();
-  }
-}
 
 class Sleepover extends Activity
 {
@@ -72,9 +53,10 @@ class Sleepover extends Activity
   String currency;
   TimeOfDay? checkin, checkout;
   LatLng? location;
-  Sleepover(this.name, {this.price = 0, this.currency = "zl", this.checkin, this.checkout, this.location});
+  String id = "";
+  Sleepover(this.name, {this.price = 0, this.currency = "zl", this.checkin, this.checkout, this.location, this.id = ""});
 
-    factory Sleepover.fromJson(Map<String, dynamic> json) {
+    factory Sleepover.fromJson(Map<String, dynamic> json, String id) {
     return Sleepover(
       json['name'],
       price: json['price']?.toDouble() ?? 0.0,
@@ -88,6 +70,7 @@ class Sleepover extends Activity
       location: json['location'] != null
           ? LatLng(json['location']['latitude'], json['location']['longitude'])
           : null,
+          id:id,
     );
   }
 
@@ -127,9 +110,10 @@ class Transport extends Activity
   final String dest;
   LatLng? sourceLocation;
   LatLng? destLocation;
-  Transport({required this.source, required this.dest, this.sourceLocation, this.destLocation});
+  String id = "";
+  Transport({required this.source, required this.dest, this.sourceLocation, this.destLocation, this.id = ""});
 
-    factory Transport.fromJson(Map<String, dynamic> json) {
+    factory Transport.fromJson(Map<String, dynamic> json, String id) {
     return Transport(
       source: json['source'],
       dest: json['dest'],
@@ -139,6 +123,7 @@ class Transport extends Activity
       destLocation: json['destLocation'] != null
           ? LatLng(json['destLocation']['latitude'], json['destLocation']['longitude'])
           : null,
+        id:id
     );
   }
 
@@ -153,28 +138,5 @@ class Transport extends Activity
           ? {"latitude": destLocation!.latitude, "longitude": destLocation!.longitude}
           : null,
     };
-  }
-}
-
-class TransportProvider with ChangeNotifier {
-  List<Transport> items = [];
-
-
-  void addItem(Transport t) {
-    items.add(t);
-    notifyListeners(); 
-  }
-
-  void deleteItem(Transport t)
-  {
-    items.remove(t);
-    notifyListeners();
-  }
-
-  void replaceItem(Transport incoming, Transport out)
-  {
-    int idx = items.indexOf(out);
-    items[idx] = incoming;
-    notifyListeners();
   }
 }

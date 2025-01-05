@@ -32,40 +32,27 @@ class TripPage extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (context) => ChangeNotifierProvider.value(
                               value: trip.todo,
-                              child: ToDoListPage(),
+                              child: ToDoListPage(
+                                tripId: trip.id,
+                              ),
                             )));
               },
               icon: Icon(Icons.list))
         ],
       ),
       body: ListView.separated(
-        itemCount: trip.daysProvider.items.length,
-        itemBuilder: (context, index) => MultiProvider(
-          child: DayWidget(day: trip.daysProvider.items[index], tripID: trip.id,),
-          providers: [
-            ChangeNotifierProvider.value(
-              value: trip.daysProvider.items[index].attractionsProvider,
-            ),
-            ChangeNotifierProvider.value(
-              value: trip.daysProvider.items[index].sleepoverProvider,
-            ),
-            ChangeNotifierProvider.value(
-              value: trip.daysProvider.items[index].transportProvider,
-            ),
-          ],
-        ),
+        itemCount: trip.days.length,
+        itemBuilder: (context, index) => Provider<Trip>.value(value:trip, child: DayWidget(
+            day: trip.days[index],
+        )),
         separatorBuilder: (context, index) => SizedBox(height: 20),
       ),
-      //ListView.builder(itemBuilder: (context, index) {return DayWidget(day: trip.daysProvider.items[index]);}),
-
       floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ChangeNotifierProvider.value(
-                        value: trip.daysProvider,
-                        child: tripMapView(t: trip))));
+          onPressed: () async {
+            trip.days =
+                await FirestoreService().fetchDaysWithAttractions(trip.id);
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => tripMapView(t: trip)));
           },
           child: Icon(Icons.map_outlined)),
     );
@@ -73,10 +60,9 @@ class TripPage extends StatelessWidget {
 }
 
 class DayWidget extends StatefulWidget {
-  const DayWidget({super.key, required this.day, required this.tripID});
+  const DayWidget({super.key, required this.day});
 
   final Day day;
-  final String tripID;
   @override
   State<DayWidget> createState() => _DayWidgetState();
 }
@@ -86,14 +72,16 @@ class _DayWidgetState extends State<DayWidget> {
   final GlobalKey<_DayWidgetState> dayWidgetKey = GlobalKey<_DayWidgetState>();
   @override
   Widget build(BuildContext context) {
+    var trip = Provider.of<Trip>(context, listen: false);
     if (!expanded) {
       return buildUnexpandedDayWidget();
     } else {
-      return buildExpandedDayWidget(widget.tripID, widget.day.index);
+      return buildExpandedDayWidget(trip.id, widget.day);
     }
   }
 
   Widget buildUnexpandedDayWidget() {
+    var trip = Provider.of<Trip>(context, listen: false);
     return Card(
         elevation: 10,
         color: Colors.amber[50],
@@ -115,17 +103,8 @@ class _DayWidgetState extends State<DayWidget> {
                                 builder: (context) => MultiProvider(
                                       child: DayPage(day: widget.day),
                                       providers: [
-                                        ChangeNotifierProvider.value(
-                                            value:
-                                                widget.day.attractionsProvider),
-                                        ChangeNotifierProvider.value(
-                                          value: widget.day.sleepoverProvider,
-                                        ),
-                                        ChangeNotifierProvider.value(
-                                          value: widget.day.transportProvider,
-                                        ),
-                                        ChangeNotifierProvider.value(
-                                            value: widget.day.imagesProvider)
+                                        Provider.value(value: widget.day),
+                                        Provider.value(value: trip)
                                       ],
                                     )));
                       },
@@ -143,7 +122,8 @@ class _DayWidgetState extends State<DayWidget> {
                 ])));
   }
 
-  Widget buildExpandedDayWidget(String tripId, int dayindex) {
+  Widget buildExpandedDayWidget(String tripId, Day day) {
+    var trip = Provider.of<Trip>(context, listen: false);
     return Card(
         elevation: 10,
         color: Colors.amber[50],
@@ -168,17 +148,8 @@ class _DayWidgetState extends State<DayWidget> {
                               builder: (context) => MultiProvider(
                                     child: DayPage(day: widget.day),
                                     providers: [
-                                      ChangeNotifierProvider.value(
-                                          value:
-                                              widget.day.attractionsProvider),
-                                      ChangeNotifierProvider.value(
-                                        value: widget.day.sleepoverProvider,
-                                      ),
-                                      ChangeNotifierProvider.value(
-                                        value: widget.day.transportProvider,
-                                      ),
-                                      ChangeNotifierProvider.value(
-                                          value: widget.day.imagesProvider)
+                                        Provider.value(value: widget.day),
+                                        Provider.value(value: trip)
                                     ],
                                   )));
                     },
@@ -194,7 +165,7 @@ class _DayWidgetState extends State<DayWidget> {
                       icon: Icon(Icons.arrow_circle_up))
                 ]),
               ]),
-              AttractionsListUnderDay(dayIndex: dayindex, tripID: tripId,)
+              Provider.value(value:day, child: AttractionsListUnderDay())
             ],
           ),
         ));
@@ -202,16 +173,15 @@ class _DayWidgetState extends State<DayWidget> {
 }
 
 class AttractionsListUnderDay extends StatelessWidget {
-  AttractionsListUnderDay({super.key, required this.dayIndex, required this.tripID});
-  final int dayIndex;
-  final String tripID;
-  final firestoreService = FirestoreService(); 
+  AttractionsListUnderDay({super.key});
+
+  final firestoreService = FirestoreService();
+
   @override
   Widget build(BuildContext context) {
-    final attractions = context.watch<AttractionProvider>();
-    final sleepover = context.watch<SleepoverProvider>();
-    final transport = context.watch<TransportProvider>();
-    return  Column(children: [
+    final trip = Provider.of<Trip>(context, listen: false);
+    final day = Provider.of<Day>(context, listen:false);
+    return Column(children: [
       Divider(color: Colors.black),
       Align(
           alignment: Alignment.center,
@@ -222,17 +192,30 @@ class AttractionsListUnderDay extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           )),
-      ListView.separated(
-        shrinkWrap: true,
-        itemCount: attractions.items.length,
-        itemBuilder: (context, index) {
-          return AttractionsSmallListViewElement(
-              attraction: attractions.items[index]);
-        },
-        separatorBuilder: (context, index) => Divider(
-          color: Colors.grey,
-        ),
-      ),
+      StreamBuilder(
+          stream: firestoreService.getAttractionsStream(
+              trip.id, day.id),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final attractions = snapshot.data!.docs;
+              return ListView.separated(
+                shrinkWrap: true,
+                itemCount: attractions.length,
+                itemBuilder: (context, index) {
+                  return AttractionsSmallListViewElement(
+                    attraction: Attraction.fromJson(
+                        attractions[index].data() as Map<String, dynamic>,
+                        attractions[index].id),
+                  );
+                },
+                separatorBuilder: (context, index) => Divider(
+                  color: Colors.grey,
+                ),
+              );
+            } else {
+              return Text("no attractions");
+            }
+          }),
       Align(
         alignment: Alignment.centerRight,
         child: TextButton(
@@ -243,8 +226,9 @@ class AttractionsListUnderDay extends StatelessWidget {
                     builder: (context) => AttractionCreationForm(),
                   ));
               if (a != null) {
-                  firestoreService.addAttraction(tripID, dayIndex, a);
-                //attractions.addItem(a);
+                final s = await firestoreService.addAttraction(
+                    trip.id, day.id, a);
+                a.id = s;
               }
             },
             child: Text("Add atraction")),
@@ -259,7 +243,30 @@ class AttractionsListUnderDay extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           )),
-      SleepoverSmallListViewElement(sleepover: sleepover.sleepover),
+       StreamBuilder(
+          stream: firestoreService.getSleepoversStream(
+              trip.id, day.id),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final sleepovers = snapshot.data!.docs;
+              return ListView.separated(
+                shrinkWrap: true,
+                itemCount: sleepovers.length,
+                itemBuilder: (context, index) {
+                  return SleepoverSmallListViewElement(
+                    sleepover: Sleepover.fromJson(
+                        sleepovers[index].data() as Map<String, dynamic>,
+                        sleepovers[index].id),
+                  );
+                },
+                separatorBuilder: (context, index) => Divider(
+                  color: Colors.grey,
+                ),
+              );
+            } else {
+              return Text("no sleepovers");
+            }
+          }),
       Align(
         alignment: Alignment.centerRight,
         child: TextButton(
@@ -269,7 +276,11 @@ class AttractionsListUnderDay extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => SleepoverCreationForm(),
                   ));
-              sleepover.changeSleepover(a as Sleepover);
+              if (a != null) {
+                final s = await firestoreService.addSleepover(
+                    trip.id, day.id, a);
+                  a.id = s;
+              }
             },
             child: Text("Add sleepover")),
       ),
@@ -283,12 +294,25 @@ class AttractionsListUnderDay extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           )),
-      ListView.builder(
-          shrinkWrap: true,
-          itemCount: transport.items.length,
-          itemBuilder: (context, index) {
-            return TransportSmallListViewElement(
-                transport: transport.items[index]);
+      StreamBuilder(
+          stream: firestoreService.getTransportsStream(
+              trip.id, day.id),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final transports = snapshot.data!.docs;
+              return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: transports.length,
+                  itemBuilder: (context, index) {
+                    return TransportSmallListViewElement(
+                      transport: Transport.fromJson(
+                          transports[index].data() as Map<String, dynamic>,
+                          transports[index].id),
+                    );
+                  });
+            } else {
+              return Text("no transports");
+            }
           }),
       Align(
         alignment: Alignment.centerRight,
@@ -299,7 +323,11 @@ class AttractionsListUnderDay extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => TransportCreationForm(),
                   ));
-              transport.addItem(a as Transport);
+              if (a != null) {
+                String id = await firestoreService.addTransport(
+                    trip.id, day.id, a);
+                a.id = id;
+              }
             },
             child: Text("Add transport")),
       ),
@@ -308,19 +336,23 @@ class AttractionsListUnderDay extends StatelessWidget {
 }
 
 class AttractionsSmallListViewElement extends StatelessWidget {
-  const AttractionsSmallListViewElement({super.key, required this.attraction});
+  const AttractionsSmallListViewElement(
+      {super.key,
+      required this.attraction,});
   final Attraction attraction;
 
   @override
   Widget build(BuildContext context) {
-    final attractions = context.watch<AttractionProvider>();
+    final trip = Provider.of<Trip>(context, listen: false);
+    final day = Provider.of<Day>(context, listen:false);
     return Padding(
         padding: EdgeInsets.symmetric(horizontal: 10),
         child: Row(children: [
           Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.pin_drop)),
           Builder(
             builder: (context) {
-              if (attraction.start == null && attraction.end == null) {
+              if (attraction.start == null &&
+                  attraction.end == null) {
                 return Expanded(
                   child: Center(
                     child: Text(
@@ -362,7 +394,8 @@ class AttractionsSmallListViewElement extends StatelessWidget {
           PopupMenuButton(
               onSelected: (value) async {
                 if (value == "delete") {
-                  attractions.deleteItem(attraction);
+                  FirestoreService().deleteAttraction(
+                      trip.id, day.id, attraction.id);
                 } else {
                   final a = await Navigator.push(
                       context,
@@ -371,7 +404,8 @@ class AttractionsSmallListViewElement extends StatelessWidget {
                           toEdit: attraction,
                         ),
                       ));
-                  attractions.replaceItem(a, attraction);
+                  FirestoreService().updateAttraction(
+                      trip.id, day.id, attraction, a);
                 }
               },
               itemBuilder: (context) => [
@@ -385,12 +419,18 @@ class AttractionsSmallListViewElement extends StatelessWidget {
 }
 
 class SleepoverSmallListViewElement extends StatelessWidget {
-  const SleepoverSmallListViewElement({super.key, required this.sleepover});
-  final Sleepover? sleepover;
+  const SleepoverSmallListViewElement(
+      {super.key, required this.sleepover});
+
+  final Sleepover sleepover;
+
+
   @override
   Widget build(BuildContext context) {
-    final sleepoverprovider = context.watch<SleepoverProvider>();
-    if (sleepover != null) {
+    final firestoreService = FirestoreService();
+    final trip = Provider.of<Trip>(context, listen: false);
+    final day = Provider.of<Day>(context, listen:false);
+
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 10),
         child:
@@ -398,11 +438,12 @@ class SleepoverSmallListViewElement extends StatelessWidget {
           Padding(
               padding: EdgeInsets.all(8.0), child: Icon(Icons.house_rounded)),
           Builder(builder: (context) {
-            if (sleepover!.checkin == null && sleepover!.checkout == null) {
+            if (sleepover.checkin == null &&
+                sleepover.checkout == null) {
               return Expanded(
                 child: Center(
                   child: Text(
-                    sleepover!.name,
+                    sleepover.name,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -413,20 +454,20 @@ class SleepoverSmallListViewElement extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      sleepover!.name,
+                      sleepover.name,
                       style:
                           TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        sleepover!.checkin != null
+                        sleepover.checkin != null
                             ? Text(
-                                "start: ${sleepover!.checkin!.hour}:${sleepover!.checkin!.minute} ")
+                                "start: ${sleepover.checkin!.hour}:${sleepover.checkin!.minute} ")
                             : Text(""),
-                        sleepover!.checkout != null
+                        sleepover.checkout != null
                             ? Text(
-                                "end: ${sleepover!.checkout!.hour}:${sleepover!.checkout!.minute}")
+                                "end: ${sleepover.checkout!.hour}:${sleepover.checkout!.minute}")
                             : Text(""),
                       ],
                     ),
@@ -438,7 +479,8 @@ class SleepoverSmallListViewElement extends StatelessWidget {
           PopupMenuButton(
               onSelected: (value) async {
                 if (value == "delete") {
-                  sleepoverprovider.deleteItem();
+                  firestoreService.deleteSleepover(
+                      trip.id, trip.id, sleepover.id);
                 } else {
                   final a = await Navigator.push(
                       context,
@@ -447,7 +489,8 @@ class SleepoverSmallListViewElement extends StatelessWidget {
                           toEdit: sleepover,
                         ),
                       ));
-                  sleepoverprovider.changeSleepover(a);
+                  FirestoreService().updateSleepover(
+                    trip.id, day.id, sleepover, a);
                 }
               },
               itemBuilder: (context) => [
@@ -458,29 +501,33 @@ class SleepoverSmallListViewElement extends StatelessWidget {
                   ])
         ]),
       );
-    } else {
-      return SizedBox(height: 20);
-    }
+    
   }
 }
 
 class TransportSmallListViewElement extends StatelessWidget {
-  const TransportSmallListViewElement({super.key, required this.transport});
+  const TransportSmallListViewElement(
+      {super.key,
+      required this.transport,});
   final Transport transport;
+
   @override
   Widget build(BuildContext context) {
-    final transports = context.watch<TransportProvider>();
-
+    final trip = Provider.of<Trip>(context, listen: false);
+    final day = Provider.of<Day>(context, listen:false);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Padding(
             padding: EdgeInsets.all(8.0), child: Icon(Icons.airplanemode_on)),
-        Flexible(child: Text(transport.source + " - " + transport.dest)),
+        Flexible(
+            child:
+                Text(transport.source + " - " + transport.dest)),
         PopupMenuButton(
             onSelected: (value) async {
               if (value == "delete") {
-                transports.deleteItem(transport);
+                FirestoreService().deleteTransport(
+                    trip.id, day.id, transport.id);
               } else {
                 final a = await Navigator.push<Transport?>(
                     context,
@@ -490,7 +537,8 @@ class TransportSmallListViewElement extends StatelessWidget {
                       ),
                     ));
                 if (a != null) {
-                  transports.replaceItem(a, transport);
+                  FirestoreService().updateTransport(
+                      trip.id, day.id, transport, a);
                 }
               }
             },

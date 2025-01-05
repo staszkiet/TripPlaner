@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:provider/provider.dart';
 import 'package:tripplaner/activityCreationForms.dart';
 import 'package:tripplaner/dayActivities.dart';
 import 'package:tripplaner/trip.dart';
 import 'package:tripplaner/day.dart';
 import 'package:tripplaner/directionsRepository.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:tripplaner/firestore.dart';
 
-//TODO: dodać stacka z dwoma elevated buttonami, metody są przygotowane w daysProvider
 class CustomMarker extends Marker {
   Activity? activity;
   CustomMarker(
@@ -41,7 +39,7 @@ class _tripMapViewState extends State<tripMapView> {
   bool poliloaded = false;
   bool editMode = false;
   Activity? selected;
-  int dayIndex = -1;
+  String dayIndex = "";
 
   void AddDirections({required LatLng origin, required LatLng dest}) async {
     final directions = await DirectionsRepository()
@@ -59,8 +57,8 @@ class _tripMapViewState extends State<tripMapView> {
 
   void _initalizePolylines() async {
     Set<Polyline> newLines = {};
-    for (Day d in widget.t.daysProvider.items) {
-      for (Transport t in d.transportProvider.items) {
+    for (Day d in widget.t.days) {
+      for (Transport t in d.transport) {
         if (t.sourceLocation != null && t.destLocation != null) {
           final directions = await DirectionsRepository().getDirections(
               origin: t.sourceLocation!, destination: t.destLocation!);
@@ -86,8 +84,8 @@ class _tripMapViewState extends State<tripMapView> {
   Widget build(BuildContext context) {
     Set<CustomMarker> markers = Set();
     int idx = 0;
-    for (Day d in widget.t.daysProvider.items) {
-      for (Attraction a in d.attractionsProvider.items) {
+    for (Day d in widget.t.days) {
+      for (Attraction a in d.attractions) {
         if (a.location != null) {
           markers.add(
             CustomMarker(
@@ -97,27 +95,27 @@ class _tripMapViewState extends State<tripMapView> {
               position: a.location!,
               infoWindow: InfoWindow(title: "DAY ${d.index}: ${a.name}"),
               activity: a,
-              onTap: (){setState((){selected = a; dayIndex = d.index; editMode = true;});}
+              onTap: (){setState((){selected = a; dayIndex = d.id; editMode = true;});}
             ),
           );
         }
       }
-      if (d.sleepoverProvider.sleepover != null) {
-        Sleepover? s = d.sleepoverProvider.sleepover;
-        markers.add(
-          CustomMarker(
-            icon:
-                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            markerId: MarkerId("${idx++}"),
-            position: s!.location!,
-            infoWindow:
-                InfoWindow(title: "DAY ${d.index}: SLEEPOVER IN: ${s.name}"),
-            activity: s,
-              onTap: (){setState((){selected = s; dayIndex = d.index; editMode = true;});}
-          ),
-        );
+      for (Sleepover s in d.sleepovers) {
+        if (s.location != null) {
+          markers.add(
+            CustomMarker(
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueRed),
+              markerId: MarkerId("${idx++}"),
+              position: s.location!,
+              infoWindow: InfoWindow(title: "DAY ${d.index}: ${s.name}"),
+              activity: s,
+              onTap: (){setState((){selected = s; dayIndex = d.id; editMode = true;});}
+            ),
+          );
+        }
       }
-      for (Transport t in d.transportProvider.items) {
+      for (Transport t in d.transport) {
         if (t.sourceLocation != null && t.destLocation != null) {
           markers.add(
             CustomMarker(
@@ -126,9 +124,9 @@ class _tripMapViewState extends State<tripMapView> {
               markerId: MarkerId("${idx++}"),
               position: t.sourceLocation!,
               infoWindow: InfoWindow(
-                  title: "DAY ${d.index}: SLEEPOVER IN: ${t.source}"),
+                  title: "DAY ${d.index}: SOURCE: ${t.source}"),
               activity: t,
-                onTap: (){setState((){selected = t; dayIndex = d.index; editMode = true;});}
+                onTap: (){setState((){selected = t; dayIndex = d.id; editMode = true;});}
             ),
           );
           markers.add(
@@ -138,9 +136,9 @@ class _tripMapViewState extends State<tripMapView> {
               markerId: MarkerId("${idx++}"),
               position: t.destLocation!,
               infoWindow:
-                  InfoWindow(title: "DAY ${d.index}: SLEEPOVER IN: ${t.dest}"),
+                  InfoWindow(title: "DAY ${d.index}: DEST: ${t.dest}"),
               activity: t,
-              onTap: (){setState((){selected = t; dayIndex = d.index; editMode = true;});}
+              onTap: (){setState((){selected = t; dayIndex = d.id; editMode = true;});}
             ),
           );
           if (!poliloaded) {
@@ -177,30 +175,67 @@ class _tripMapViewState extends State<tripMapView> {
           if (editMode)
             Row(children: [
               ElevatedButton(
-                onPressed: () {widget.t.daysProvider.removeActivity(dayIndex, selected); setState(() {markers = Set();
-                  lines = Set(); poliloaded = false; 
+                onPressed: ()async {
+                  var days = widget.t.days;
+                switch(selected)
+                {
+                  case Attraction():
+                  {
+                    FirestoreService().deleteAttraction(widget.t.id, dayIndex, (selected as Attraction).id);
+                    days = await FirestoreService().fetchDaysWithAttractions(widget.t.id);
+                  }
+                  case Transport():
+                  {
+                    FirestoreService().deleteTransport(widget.t.id, dayIndex, (selected as Transport).id);
+                    days = await FirestoreService().fetchDaysWithAttractions(widget.t.id);
+                  }
+                  case Sleepover():
+                  {
+                    FirestoreService().deleteSleepover(widget.t.id, dayIndex, (selected as Sleepover).id);
+                    days = await FirestoreService().fetchDaysWithAttractions(widget.t.id);
+                  }
+                  default:
+                  {
+                    break;
+                  }
+                }
+                setState(() {markers = Set();
+                  lines = Set(); poliloaded = false; widget.t.days = days;
                 });},
                 child: Text("delete"),
               ),
               ElevatedButton(onPressed: () async{
+                  var days = widget.t.days;
                 switch(selected)
                 {
                   case Attraction():
                   {
                     final a = await Navigator.push<Attraction>(context, MaterialPageRoute(builder: (context) => AttractionCreationForm(toEdit:selected as Attraction)));
-                    widget.t.daysProvider.editActivity(dayIndex, selected, a);
+                    if(a != null)
+                    {
+                      FirestoreService().updateAttraction(widget.t.id, dayIndex, selected as Attraction, a);
+                      days = await FirestoreService().fetchDaysWithAttractions(widget.t.id);
+                    }
                     break;
                   }
-                  case Sleepover():
+                  case Sleepover():                   
                   {
                     final a = await Navigator.push<Sleepover>(context, MaterialPageRoute(builder: (context) => SleepoverCreationForm(toEdit:selected as Sleepover)));
-                    widget.t.daysProvider.editActivity(dayIndex, selected, a);
+                    if(a != null)
+                    {
+                      FirestoreService().updateSleepover(widget.t.id, dayIndex, selected as Sleepover, a);
+                      days = await FirestoreService().fetchDaysWithAttractions(widget.t.id);
+                    }
                     break;
                   }
                   case Transport():
                   {
                     final a = await Navigator.push<Transport>(context, MaterialPageRoute(builder: (context) => TransportCreationForm(toEdit:selected as Transport)));
-                    widget.t.daysProvider.editActivity(dayIndex, selected, a);
+                    if(a != null)
+                    {
+                      FirestoreService().updateTransport(widget.t.id, dayIndex, selected as Transport, a);
+                      days = await FirestoreService().fetchDaysWithAttractions(widget.t.id);
+                    }
                     break;
                   }
                   default:
@@ -209,7 +244,7 @@ class _tripMapViewState extends State<tripMapView> {
                   }
                 }
                 setState(() {markers = Set();
-                  lines = Set(); poliloaded = false; 
+                  lines = Set(); poliloaded = false; widget.t.days = days;
                 });
               }, child: Text("edit"))
             ])
