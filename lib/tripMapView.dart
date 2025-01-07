@@ -82,7 +82,7 @@ class _tripMapViewState extends State<tripMapView> {
 
   @override
   Widget build(BuildContext context) {
-    Set<CustomMarker> markers = Set();
+    Set<CustomMarker> markers = {};
     int idx = 0;
     for (Day d in widget.t.days) {
       for (Attraction a in d.attractions) {
@@ -93,7 +93,7 @@ class _tripMapViewState extends State<tripMapView> {
                   BitmapDescriptor.hueGreen),
               markerId: MarkerId("${idx++}"),
               position: a.location!,
-              infoWindow: InfoWindow(title: "DAY ${d.index}: ${a.name}"),
+              infoWindow: InfoWindow(title: "DAY ${d.index}: Attraction: ${a.name}"),
               activity: a,
               onTap: (){setState((){selected = a; dayIndex = d.id; editMode = true;});}
             ),
@@ -108,7 +108,7 @@ class _tripMapViewState extends State<tripMapView> {
                   BitmapDescriptor.hueRed),
               markerId: MarkerId("${idx++}"),
               position: s.location!,
-              infoWindow: InfoWindow(title: "DAY ${d.index}: ${s.name}"),
+              infoWindow: InfoWindow(title: "DAY ${d.index}: Sleepover: ${s.name}"),
               activity: s,
               onTap: (){setState((){selected = s; dayIndex = d.id; editMode = true;});}
             ),
@@ -124,7 +124,7 @@ class _tripMapViewState extends State<tripMapView> {
               markerId: MarkerId("${idx++}"),
               position: t.sourceLocation!,
               infoWindow: InfoWindow(
-                  title: "DAY ${d.index}: SOURCE: ${t.source}"),
+                  title: "DAY ${d.index}: Source: ${t.source}"),
               activity: t,
                 onTap: (){setState((){selected = t; dayIndex = d.id; editMode = true;});}
             ),
@@ -136,7 +136,7 @@ class _tripMapViewState extends State<tripMapView> {
               markerId: MarkerId("${idx++}"),
               position: t.destLocation!,
               infoWindow:
-                  InfoWindow(title: "DAY ${d.index}: DEST: ${t.dest}"),
+                  InfoWindow(title: "DAY ${d.index}: Destination: ${t.dest}"),
               activity: t,
               onTap: (){setState((){selected = t; dayIndex = d.id; editMode = true;});}
             ),
@@ -199,8 +199,8 @@ class _tripMapViewState extends State<tripMapView> {
                     break;
                   }
                 }
-                setState(() {markers = Set();
-                  lines = Set(); poliloaded = false; widget.t.days = days;
+                setState(() {markers = {};
+                  lines = {}; poliloaded = false; widget.t.days = days;
                 });},
                 child: Text("delete"),
               ),
@@ -243,8 +243,8 @@ class _tripMapViewState extends State<tripMapView> {
                     break;
                   }
                 }
-                setState(() {markers = Set();
-                  lines = Set(); poliloaded = false; widget.t.days = days;
+                setState(() {markers = {};
+                  lines = {}; poliloaded = false; widget.t.days = days;
                 });
               }, child: Text("edit"))
             ])

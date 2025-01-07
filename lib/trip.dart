@@ -9,11 +9,18 @@ class Trip
   final DateTime start;
   final DateTime finish;
   List<Day> days = [];
-  ToDoListProvider todo = ToDoListProvider();
+  List<ToDoElement> todo = [];
   String id = "";
   
 
-  Trip(this.name, this.start, this.finish, {this.id = ""});
+  Trip(this.name, this.start, this.finish, {this.id = ""})
+  {
+    final span = finish.difference(start).inDays;
+    for(int i = 0; i <= span; i++)
+    {
+      days.add(Day(start.add(Duration(days: i)), i));
+    }
+  }
 
   factory Trip.fromJson(Map<String, dynamic> json, String dbId) {
     return Trip(

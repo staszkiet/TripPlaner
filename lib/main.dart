@@ -24,6 +24,8 @@ FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
       InitializationSettings(android: androidSettings);
 
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  
   runApp(MyApp());
 }
 
@@ -34,7 +36,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: AuthPage(),
+      theme: ThemeData(elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white))),
+      home: LoginForm(),
     );
   }
 }

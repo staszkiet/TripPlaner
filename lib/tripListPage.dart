@@ -11,84 +11,97 @@ class TripListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //final trips = context.watch<TripProvider>();
     final firestoreService = FirestoreService();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Your trips"),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-          stream: firestoreService.getTripsStream(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Center(
-                child: Text(
-                  "No active trips",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 18,
-                  ),
-                ),
-              );
-            } else {
-              List trips = snapshot.data!.docs;
-              return ListView.separated(
-                itemCount: trips.length,
-                itemBuilder: (context, index) {
-                  DocumentSnapshot document = trips[index];
-                  Map<String, dynamic> data =
-                      document.data() as Map<String, dynamic>;
-                  Trip t = Trip.fromJson(data, document.id);
-                  return TripListElement(trip: t);
-                },
-                separatorBuilder: (context, index) {
-                  return SizedBox(
-                    height: 20,
-                  );
-                },
-              );
+        appBar: AppBar(
+          title: const Text("TripPlaner"),
+          backgroundColor: Colors.blue[50],
+        ),
+        body: Container(
+            color: Colors.blue[50],
+            child: StreamBuilder(
+                stream: firestoreService.getTripsStream(),
+                builder: (context, snapshot) {
+                  return !snapshot.hasData
+                      ? Center(child: CircularProgressIndicator())
+                      : CustomScrollView(
+                          slivers: [
+                            SliverToBoxAdapter(
+                                child: Center(
+                                    child: Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 30),
+                                        child: Text("Your Trips",
+                                            style: TextStyle(fontSize: 40))))),
+                            SliverToBoxAdapter(
+                                child: Center(
+                                    child: Padding(
+                                        padding: EdgeInsets.only(bottom: 20),
+                                        child: Text(
+                                            "Click arrow to see details",
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.grey))))),
+                            SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                              List trips = snapshot.data!.docs;
+                              DocumentSnapshot document = trips[index];
+                              Map<String, dynamic> data =
+                                  document.data() as Map<String, dynamic>;
+                              Trip t = Trip.fromJson(data, document.id);
+                              return Column(children: [
+                                TripListElement(trip: t),
+                                SizedBox(
+                                  height: 20,
+                                )
+                              ]);
+                            }, childCount: snapshot.data!.docs.length))
+                          ],
+                        );
+                })),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.black,
+          shape: CircleBorder(),
+          onPressed: () async {
+            final t = await Navigator.push<Trip>(context,
+                MaterialPageRoute(builder: (context) => TripCreationForm()));
+            if (t != null) {
+              String id = await firestoreService.addTrip(t);
+              t.id = id;
             }
-          }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final t = await Navigator.push<Trip>(context,
-              MaterialPageRoute(builder: (context) => TripCreationForm()));
-          if (t != null) {
-           String id = await firestoreService.addTrip(t);
-           t.id = id;
-          }
-        },
-        child: Icon(Icons.add),
-      ),
-    );
+          },
+          child: Icon(Icons.add),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: BottomAppBar(
+            height: 60,
+            color: Colors.grey,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: Icon(Icons.person, color: Colors.white),
+                onPressed: () {
+                  // Action for menu button
+                }, // Background color
+              ),
+            )));
   }
 }
 
 class TripListElement extends StatelessWidget {
-  const TripListElement({required this.trip, super.key});
-  final Trip trip;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        constraints: BoxConstraints(minHeight: 100),
-        child: LayoutBuilder(builder: (context, constraints) {
-          if (constraints.maxWidth > 600) {
-            return TripListElementWideLayout(trip: trip);
-          } else {
-            return TripListElementNarrowLayout(trip: trip);
-          }
-        }));
-  }
-}
-
-class TripListElementNarrowLayout extends StatelessWidget {
-  const TripListElementNarrowLayout({super.key, required this.trip});
+  const TripListElement({super.key, required this.trip});
   final Trip trip;
   @override
   Widget build(BuildContext context) {
     return Card(
-        color: Colors.amber[50],
+        color: Colors.blue[200],
         elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+          side: BorderSide(color: Colors.black, width: 2.0),
+        ),
         child: Padding(
           padding: EdgeInsets.all(30),
           child:
@@ -100,13 +113,20 @@ class TripListElementNarrowLayout extends StatelessWidget {
                   children: [
                     Padding(
                       padding: EdgeInsets.only(bottom: 10),
-                      child: Text(
-                        trip.name,
+                      child: Row(children:[Text(
+                        "Trip: ",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 25,
                         ),
                       ),
+                        Text(
+                        trip.name,
+                        style: TextStyle(
+                          fontSize: 25,
+                        ),
+                      ),
+                      ])
                     ),
                     Text(
                         "${trip.start.day}/${trip.start.month}/${trip.start.year} - ${trip.finish.day}/${trip.finish.month}/${trip.finish.year}")
@@ -114,9 +134,10 @@ class TripListElementNarrowLayout extends StatelessWidget {
             ),
             Flexible(
               child: IconButton(
-                  onPressed: () async{
+                  onPressed: () async {
                     final firestoreService = FirestoreService();
-                    List<Day> d = await firestoreService.fetchDaysWithAttractions(trip.id);
+                    List<Day> d = await firestoreService
+                        .fetchDaysWithAttractions(trip.id);
                     trip.days = d;
                     Navigator.push(
                       context,
@@ -128,35 +149,5 @@ class TripListElementNarrowLayout extends StatelessWidget {
             )
           ]),
         ));
-  }
-}
-
-class TripListElementWideLayout extends StatelessWidget {
-  const TripListElementWideLayout({super.key, required this.trip});
-  final Trip trip;
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 30),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text(
-          trip.name,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 25,
-          ),
-        ),
-        Text(
-            "${trip.start.day}/${trip.start.month}/${trip.start.year} - ${trip.finish.day}/${trip.finish.month}/${trip.finish.year}"),
-        IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TripPage(trip: trip)),
-              );
-            },
-            icon: Icon(Icons.arrow_right_alt_rounded)),
-      ]),
-    );
   }
 }

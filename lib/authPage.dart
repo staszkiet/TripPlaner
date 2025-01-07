@@ -2,52 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tripplaner/tripListPage.dart';
 
-class AuthPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: 20),
-              child: Text(
-                "TripPlaner",
-                style: TextStyle(fontSize: 50),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => registrationForm()));
-              },
-              child: Text("Register"),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => LoginForm()));
-              },
-              child: Text("Login"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                  Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (context) => TripListPage()));
-              },
-              child: Text("Debug"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class LoginForm extends StatefulWidget {
   LoginForm({super.key});
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -71,7 +25,6 @@ class _LoginFormState extends State<LoginForm> {
         email: email,
         password: password,
       );
-     // final trips = await fetchTrips();
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => TripListPage()));
     } catch (e) {}
@@ -83,16 +36,18 @@ class _LoginFormState extends State<LoginForm> {
         child: Form(
       key: _formKey,
       child: Row(children: [
-        Flexible(flex: 1, child: Container()),
+        Flexible(child: Container()),
         Flexible(
-            flex: 3,
+          flex:5,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  "Log in:",
-                  style: TextStyle(fontSize: 30),
-                ),
+                               Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Text(
+                  "TripPlaner",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 45,),
+                ),),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 20),
                   child: SizedBox(
@@ -126,7 +81,7 @@ class _LoginFormState extends State<LoginForm> {
                       obscureText: !_passwordVisible,
                       decoration: InputDecoration(
                           hintText: "Password",
-                          border: OutlineInputBorder(),
+                           border: OutlineInputBorder(),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _passwordVisible
@@ -148,7 +103,8 @@ class _LoginFormState extends State<LoginForm> {
                     ),
                   ),
                 ),
-                ElevatedButton(
+                SizedBox(width: 100, child: ElevatedButton(
+                  
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         login(
@@ -157,10 +113,11 @@ class _LoginFormState extends State<LoginForm> {
                             password: _passwordController.text);
                       }
                     },
-                    child: const Text("Log in"))
+                    child: const Text("Log in"))),
+                    Padding(padding: EdgeInsets.symmetric(vertical: 30), child:SignUpText())
               ],
             )),
-        Flexible(flex: 1, child: Container())
+        Flexible(child: Container())
       ]),
     ));
   }
@@ -184,18 +141,12 @@ class _registrationFormState extends State<registrationForm> {
       {required BuildContext context,
       required String email,
       required String password}) async {
-    print("here");
-    try {
       await widget._auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      print("User registered successfully!");
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => TripListPage()));
-    } catch (e) {
-      print("Registration error: $e");
-    }
   }
 
   @override
@@ -206,9 +157,10 @@ class _registrationFormState extends State<registrationForm> {
           child:Row(children: [Flexible(flex:1, child:Container()),Flexible(flex:3, child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Padding(padding: EdgeInsets.only(bottom: 10), child:Text(
-                  "Register:",
-                  style: TextStyle(fontSize: 30),
+              Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Text(
+                  "TripPlaner",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 45,),
                 ),),
               Padding(padding: EdgeInsets.symmetric(vertical: 10), 
                 child: TextFormField(
@@ -271,9 +223,43 @@ class _registrationFormState extends State<registrationForm> {
                           password: _passwordController.text);
                     }
                   },
-                  child: const Text("Add"))
+                  child: const Text("Sign up"))
             ],
           )), Flexible(flex:1, child:Container())])),
+    );
+  }
+}
+
+class SignUpText extends StatelessWidget {
+  const SignUpText({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Not a member? ",
+                  style: TextStyle(fontSize: 16),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // Navigate to Register Page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => registrationForm()),
+                    );
+                  },
+                  child: Text(
+                    "Sign up",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue, // Link color
+                      decoration: TextDecoration.underline, // Underline the link
+                    ),
+                  ),
+                ),
+              ],
     );
   }
 }

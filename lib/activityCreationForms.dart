@@ -17,6 +17,8 @@ class _AttractionCreationFormState extends State<AttractionCreationForm> {
   final _nameController = TextEditingController();
   final _startController = TextEditingController();
   final _endController = TextEditingController();
+  final _amountController = TextEditingController();
+  final _currencyController = TextEditingController();
 
   TimeOfDay? start;
   TimeOfDay? end;
@@ -97,11 +99,23 @@ class _AttractionCreationFormState extends State<AttractionCreationForm> {
                   _selectTime(context, false);
                 },
               ),
+              Row(children: [Text("amount:"),
+              SizedBox(width: 100, child: TextFormField(
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                 validator: (value) => double.tryParse(_amountController.text) == null ? "invalid number" : null,
+              ),)]),
+              Row(children: [Text("currency:"),
+               SizedBox(width: 100, child: TextFormField(
+                controller: _currencyController,
+      
+              ),)
+              ]),
               ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       final toAdd = Attraction(_nameController.text,
-                          start: start, end: end, location: location);
+                          start: start, end: end, location: location, currency: _currencyController.text, price: double.parse(_amountController.text));
                       Navigator.pop(context, toAdd);
                     }
                   },
@@ -262,7 +276,12 @@ class _TransportCreationFormState extends State<TransportCreationForm> {
       initialized = true;
     }
     return Material(
-      child: Form(
+      child: 
+      Row(children: [
+        Flexible(flex:1, child:Container()),
+      Flexible(
+        flex: 3,
+        child: Form(
           key: _formKey,
           child: Column(
             children: [
@@ -312,7 +331,9 @@ class _TransportCreationFormState extends State<TransportCreationForm> {
                   },
                   child: const Text("Add"))
             ],
-          )),
+          )),),
+          Flexible(child: Container())
+          ])
     );
   }
 

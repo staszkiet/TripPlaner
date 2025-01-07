@@ -114,6 +114,7 @@ class _TripCreationFormState extends State<TripCreationForm> {
                     if (endDate != null && endDate!.isBefore(startDate!)) {
                       return "Start date must be before end date";
                     }
+                    return "unknown";
                   },
                 ),
                 SizedBox(height: 30),

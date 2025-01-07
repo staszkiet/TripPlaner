@@ -1,27 +1,27 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tripplaner/firestore.dart';
+import 'package:flutter/material.dart';
 
 class ToDoElement {
   final String description;
-  bool done = false;
+  bool notification = false;
+  DateTime? notificationTime;
   String id = "";
-  ToDoElement({required this.description, bool done = false, this.id = ""}) {
-    this.done = done;
-  }
+  ToDoElement({required this.description, this.notification = false, this.id = "", this.notificationTime});
 
   factory ToDoElement.fromJson(Map<String, dynamic> json, String id) {
     return ToDoElement(
-      description: json['description'],
-      done: json['done'] ?? false,
-      id:id
-    );
+        description: json['description'], 
+        notification: json['notification'] ?? false, 
+        notificationTime: json["notificationTime"] == null ? null : (json["notificationTime"] as Timestamp).toDate(),
+        id: id);
   }
 
   Map<String, dynamic> toJson() {
     return {
       "description": description,
-      "done": done,
+      "notification": notification,
+      "notificationTime": notificationTime
     };
   }
 }
@@ -34,122 +34,69 @@ class ToDoListPage extends StatefulWidget {
   State<ToDoListPage> createState() => _ToDoListPageState();
 }
 
-class ToDoListProvider with ChangeNotifier {
-  List<ToDoElement> doneElements = [];
-  List<ToDoElement> notDoneElements = [];
-
-  void addItem(ToDoElement t) {
-    notDoneElements.add(t);
-    notifyListeners();
-  }
-
-  void markItemAsDone(ToDoElement t) {
-    if (notDoneElements.remove(t)) {
-      doneElements.add(t);
-    }
-    notifyListeners();
-  }
-
-  void markItemAsUndone(ToDoElement t) {
-    if (doneElements.remove(t)) {
-      notDoneElements.add(t);
-    }
-    notifyListeners();
-  }
-}
-
 class _ToDoListPageState extends State<ToDoListPage> {
   final _nameController = TextEditingController();
   final firestoreService = FirestoreService();
   @override
   Widget build(BuildContext context) {
-    //final todo = context.watch<ToDoListProvider>();
     return Scaffold(
         appBar: AppBar(
           title: Text("TODO List"),
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: Row(children: [
-                Expanded(
-                    child: Column(children: [
-                  Text("TODO"),
-                  Expanded(
-                    child: StreamBuilder(
-                        stream:
-                            firestoreService.getToDoUndoneStream(widget.tripId),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            final elements = snapshot.data!.docs;
-                            return ListView.builder(
-                              itemBuilder: (context, index) =>
-                                  ToDoElementWidget(
-                                      element: ToDoElement.fromJson(
-                                          elements[index].data()
-                                              as Map<String, dynamic>, elements[index].id), tripId: widget.tripId,),
-                              itemCount: elements.length,
-                            );
-                          } else {
-                            return Container();
-                          }
-                        }),
-                  )
-                ])),
-                VerticalDivider(
-                  color: Colors.grey,
-                  thickness: 1,
-                  width: 20,
-                ),
-                Expanded(
-                    child: Column(children: [
-                  Text("DONE"),
-                  Expanded(
-                    child: StreamBuilder(
-                        stream:
-                            firestoreService.getToDoDoneStream(widget.tripId),
-                        builder: (context, snapshot) {
-                          if(snapshot.hasData)
-                          {
-                            final elements = snapshot.data!.docs;
-                            return ListView.builder(
-                            itemBuilder: (context, index) =>
-                                ToDoDoneElementWidget(
-                                    element: ToDoElement.fromJson(elements[index].data() as Map<String, dynamic>, elements[index].id), tripId: widget.tripId,),
-                            itemCount: elements.length
-                          );
-                          }
-                          else
-                          {
-                            return Container();
-                          }
-                        }),
-                  )
-                ]))
-              ]),
-            ),
-            Row(children: [
-              Expanded(
-                  child: TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(hintText: "Add task"),
-              )),
-              IconButton(
-                  onPressed: () async{
-                    ToDoElement t = ToDoElement(description: _nameController.text);
-                    String id = await firestoreService.addToDoUndoneItem(widget.tripId, t);
-                    t.id = id;
-                    _nameController.text = "";
-                  },
-                  icon: Icon(Icons.done))
-            ])
-          ],
-        ));
+        body: Container(
+            child: Column(children: [
+          Expanded(
+            child: StreamBuilder(
+                stream: firestoreService.getToDoStream(widget.tripId),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final elements = snapshot.data!.docs;
+                    return ListView.builder(
+                      itemBuilder: (context, index) => ToDoElementWidget(
+                        element: ToDoElement.fromJson(
+                            elements[index].data() as Map<String, dynamic>,
+                            elements[index].id),
+                        tripId: widget.tripId,
+                      ),
+                      itemCount: elements.length,
+                    );
+                  } else {
+                    return Container();
+                  }
+                }),
+          ),
+          Container(
+              decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: Colors.black)),
+                  color: Colors.white),
+              child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Row(children: [
+                    Expanded(
+                        child: TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        hintText: "Add task",
+                      ),
+                    )),
+                    IconButton(
+                        onPressed: () async {
+                          ToDoElement t =
+                              ToDoElement(description: _nameController.text);
+                          String id = await firestoreService.addToDoItem(
+                              widget.tripId, t);
+                          t.id = id;
+                          _nameController.text = "";
+                        },
+                        icon: Icon(Icons.done))
+                  ])))
+        ])));
   }
 }
 
 class ToDoElementWidget extends StatefulWidget {
-  const ToDoElementWidget({super.key, required this.element, required this.tripId});
+  const ToDoElementWidget(
+      {super.key, required this.element, required this.tripId});
   final String tripId;
   final ToDoElement element;
   @override
@@ -160,29 +107,50 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
   bool notificationOn = false;
 
   @override
-  Widget build(BuildContext context) {    return Padding(
+  Widget build(BuildContext context) {
+    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.blue[50]),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.element.description,
-                style: TextStyle(fontSize: 16),
+              Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Text(
+                    "task",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  )),
+              Divider(color: Colors.black),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(padding: EdgeInsets.only(left: 10), child:Icon(Icons.create)),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                        child: Text(
+                          widget.element.description,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                
               ),
-              SizedBox(height: 8),
+              Divider(
+                color: Colors.black,
+              ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
-                    onPressed: () async{
-                      final id = await FirestoreService().markItemAsDone(widget.tripId, widget.element);
-                      widget.element.id = id;
+                    onPressed: () async {
+                      FirestoreService()
+                          .markItemAsDone(widget.tripId, widget.element);
                     },
                     icon: Icon(Icons.done),
                   ),
@@ -199,43 +167,7 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
                 ],
               ),
             ],
-          ),
-        ),
-      ),
+          )),
     );
-  }
-}
-
-class ToDoDoneElementWidget extends StatelessWidget {
-  const ToDoDoneElementWidget({super.key, required this.element, required this.tripId});
-  final String tripId;
-  final ToDoElement element;
-  @override
-  Widget build(BuildContext context) {
-    final todo = context.watch<ToDoListProvider>();
-    return Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        element.description,
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      IconButton(
-                        onPressed: () async{
-                           final id = await FirestoreService().markItemAsUndone(tripId, element);
-                           element.id = id;
-                        },
-                        icon: Icon(Icons.cancel),
-                      ),
-                    ]))));
   }
 }

@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:tripplaner/toDoList.dart';
 import 'package:tripplaner/trip.dart';
 import 'package:tripplaner/dayActivities.dart';
 import 'package:tripplaner/day.dart';
-import 'package:file_picker/file_picker.dart';
 
 class FirestoreService {
   final CollectionReference trips =
@@ -117,18 +114,15 @@ class FirestoreService {
     
   // }
 
-  Future<String> addToDoUndoneItem(String tripId, ToDoElement e) async {
+  Future<String> addToDoItem(String tripId, ToDoElement e) async {
     DocumentReference docRef =
-        await trips.doc(tripId).collection('todoundone').add(e.toJson());
+        await trips.doc(tripId).collection('todo').add(e.toJson());
     return docRef.id;
   }
 
-  Stream<QuerySnapshot> getToDoDoneStream(String tripId) {
-    return trips.doc(tripId).collection('tododone').snapshots();
-  }
 
-  Stream<QuerySnapshot> getToDoUndoneStream(String tripId) {
-    return trips.doc(tripId).collection('todoundone').snapshots();
+  Stream<QuerySnapshot> getToDoStream(String tripId) {
+    return trips.doc(tripId).collection('todo').snapshots();
   }
 
   Stream<QuerySnapshot> getAttractionsStream(String tripId, String dayId) {
@@ -208,11 +202,8 @@ class FirestoreService {
   }
 
 
-  Future<String> markItemAsDone(String tripId, ToDoElement element) async {
-    trips.doc(tripId).collection('todoundone').doc(element.id).delete();
-    DocumentReference docRef =
-        await trips.doc(tripId).collection('tododone').add(element.toJson());
-    return docRef.id;
+  void markItemAsDone(String tripId, ToDoElement element) async {
+    trips.doc(tripId).collection('todo').doc(element.id).delete();
   }
 
   Future<String> markItemAsUndone(String tripId, ToDoElement element) async {
