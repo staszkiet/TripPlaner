@@ -14,35 +14,37 @@ class LocationPickerState extends State<LocationPicker> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pick Location"),
-        leading: 
-        IconButton(onPressed:() {
-            
-              if (_selectedLocation != null) {
-              Navigator.pop(context, [_selectedLocation!.latitude, _selectedLocation!.longitude]);
-            }else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Please select a location")),
-              );
-            }
-          }, icon: Icon(Icons.done))
-        
-      ),
+          title: Text("Pick Location"),
+          leading: IconButton(
+              onPressed: () {
+                if (_selectedLocation != null) {
+                  Navigator.pop(context, [
+                    _selectedLocation!.latitude,
+                    _selectedLocation!.longitude
+                  ]);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Please select a location")),
+                  );
+                }
+              },
+              icon: Icon(Icons.done))),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
           target: LatLng(37.7749, -122.4194),
           zoom: 12,
         ),
         onTap: (position) {
-            setState(() {
-              _selectedLocation = LatLng(position.latitude, position.longitude);
-            });
+          setState(() {
+            _selectedLocation = LatLng(position.latitude, position.longitude);
+          });
         },
         markers: _selectedLocation != null
             ? {
                 Marker(
                   markerId: MarkerId("selected-location"),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueBlue),
                   position: _selectedLocation!,
                 ),
               }

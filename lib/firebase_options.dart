@@ -85,5 +85,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'tripplaner-6fccd.firebasestorage.app',
     measurementId: 'G-47JHG0NWL8',
   );
-
 }

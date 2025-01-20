@@ -189,11 +189,12 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
                         );
 
                         if (selectedDate == null) return;
-
-                        TimeOfDay? selectedTime = context.mounted ? await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.now(),
-                        ) : null;
+                        TimeOfDay? selectedTime = context.mounted
+                            ? await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.now(),
+                              )
+                            : null;
 
                         if (selectedTime == null) return;
 

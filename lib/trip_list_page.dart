@@ -82,9 +82,7 @@ class TripListPage extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: IconButton(
                 icon: Icon(Icons.person, color: Colors.white),
-                onPressed: () {
-                  // Action for menu button
-                }, // Background color
+                onPressed: () {},
               ),
             )));
   }
@@ -112,22 +110,22 @@ class TripListElement extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(bottom: 10),
-                      child: Row(children:[Text(
-                        "Trip: ",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25,
-                        ),
-                      ),
-                        Text(
-                        trip.name,
-                        style: TextStyle(
-                          fontSize: 25,
-                        ),
-                      ),
-                      ])
-                    ),
+                        padding: EdgeInsets.only(bottom: 10),
+                        child: Row(children: [
+                          Text(
+                            "Trip: ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 25,
+                            ),
+                          ),
+                          Text(
+                            trip.name,
+                            style: TextStyle(
+                              fontSize: 25,
+                            ),
+                          ),
+                        ])),
                     Text(
                         "${trip.start.day}/${trip.start.month}/${trip.start.year} - ${trip.finish.day}/${trip.finish.month}/${trip.finish.year}")
                   ]),
@@ -139,13 +137,12 @@ class TripListElement extends StatelessWidget {
                     List<Day> d = await firestoreService
                         .fetchDaysWithAttractions(trip.id);
                     trip.days = d;
-                    if(context.mounted)
-                    {
+                    if (context.mounted) {
                       Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => TripPage(trip: trip)),
-                    );
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TripPage(trip: trip)),
+                      );
                     }
                   },
                   icon: Icon(Icons.arrow_right_alt_rounded)),

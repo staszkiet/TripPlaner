@@ -33,14 +33,18 @@ class DayPage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                Text("Attractions",
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text("Attractions",
                       style:
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                   StreamBuilder(
                       stream: FirestoreService()
                           .getAttractionsStream(trip.id, day.id),
                       builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                        if (snapshot.hasData &&
+                            snapshot.data!.docs.isNotEmpty) {
                           final attractions = snapshot.data!.docs;
                           return ListView.separated(
                             shrinkWrap: true,
@@ -62,8 +66,8 @@ class DayPage extends StatelessWidget {
                           return Text("click plus to add attractions");
                         }
                       }),
-                      AttractionAddButton(),
-                     Divider(color: Colors.black),
+                  AttractionAddButton(),
+                  Divider(color: Colors.black),
                   Text("Sleepovers",
                       style:
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
@@ -71,7 +75,8 @@ class DayPage extends StatelessWidget {
                       stream: FirestoreService()
                           .getSleepoversStream(trip.id, day.id),
                       builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                        if (snapshot.hasData &&
+                            snapshot.data!.docs.isNotEmpty) {
                           final sleepovers = snapshot.data!.docs;
                           return ListView.separated(
                             shrinkWrap: true,
@@ -93,8 +98,8 @@ class DayPage extends StatelessWidget {
                           return Text("no sleepovers");
                         }
                       }),
-                      SleepoverAddButton(),
-                    Divider(color: Colors.black),
+                  SleepoverAddButton(),
+                  Divider(color: Colors.black),
                   Text("Transports",
                       style:
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
@@ -102,7 +107,8 @@ class DayPage extends StatelessWidget {
                       stream: FirestoreService()
                           .getTransportsStream(trip.id, day.id),
                       builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty ) {
+                        if (snapshot.hasData &&
+                            snapshot.data!.docs.isNotEmpty) {
                           final transports = snapshot.data!.docs;
                           return ListView.separated(
                             shrinkWrap: true,
@@ -124,29 +130,29 @@ class DayPage extends StatelessWidget {
                           return Text("no transports");
                         }
                       }),
-                      TransportAddButton(),
+                  TransportAddButton(),
                   Divider(color: Colors.black),
-                    Text("Photos",
+                  Text("Photos",
                       style:
                           TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-                      StreamBuilder(
-                          stream: FirestoreService()
-                              .getPhotosStream(trip.id, day.id),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                              return Text("no photos");
-                            } else {
-                              final photos = snapshot.data!.docs;
-                              return SingleChildScrollView(
-                                  child: Wrap(
-                                      children: photos.map((e) {
-                                return PhotoListViewElement(
-                                  photo: UploadedPhoto.fromJson(
-                                      e.data() as Map<String, dynamic>, e.id),
-                                );
-                              }).toList()));
-                            }
-                          }),
+                  StreamBuilder(
+                      stream:
+                          FirestoreService().getPhotosStream(trip.id, day.id),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return Text("no photos");
+                        } else {
+                          final photos = snapshot.data!.docs;
+                          return SingleChildScrollView(
+                              child: Wrap(
+                                  children: photos.map((e) {
+                            return PhotoListViewElement(
+                              photo: UploadedPhoto.fromJson(
+                                  e.data() as Map<String, dynamic>, e.id),
+                            );
+                          }).toList()));
+                        }
+                      }),
                   IconButton(
                     icon: Icon(Icons.add_a_photo),
                     onPressed: () {
@@ -275,25 +281,41 @@ class AttractionsWidget extends StatelessWidget {
   final Attraction attraction;
   @override
   Widget build(BuildContext context) {
-    return Card(
-        color: Colors.blue[200],
-        elevation: 10,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-          side: BorderSide(color: Colors.black, width: 2.0),
-        ),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.pin_drop)),
-            Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Column(children: [Text(attraction.name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),), 
-            Text("start: ${attraction.start == null ? "??" : "${attraction.start!.hour}:${attraction.start!.minute}"}"),
-            Text("end: ${attraction.end == null ? "??" : "${attraction.end!.hour}:${attraction.end!.minute}"}"),
-            Text("cost: ${ attraction.price.toString() + attraction.currency}")
-            ],),),
-             ActivityPopupMenu(activity: attraction)
-          ],
-       )
-    );
+    return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Card(
+            color: Colors.blue[200],
+            elevation: 10,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+              side: BorderSide(color: Colors.black, width: 2.0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                    padding: EdgeInsets.all(8.0), child: Icon(Icons.pin_drop)),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    children: [
+                      Text(
+                        attraction.name,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                          "start: ${attraction.start == null ? "??" : "${attraction.start!.hour}:${attraction.start!.minute}"}"),
+                      Text(
+                          "end: ${attraction.end == null ? "??" : "${attraction.end!.hour}:${attraction.end!.minute}"}"),
+                      Text(
+                          "cost: ${attraction.price.toString() + attraction.currency}")
+                    ],
+                  ),
+                ),
+                ActivityPopupMenu(activity: attraction)
+              ],
+            )));
   }
 }
 
@@ -302,25 +324,38 @@ class SleepoverWidget extends StatelessWidget {
   final Sleepover sleepover;
   @override
   Widget build(BuildContext context) {
-     return Card(
-        color: Colors.green[200],
-        elevation: 10,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-          side: BorderSide(color: Colors.black, width: 2.0),
-        ),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.house)),
-            Padding(padding: EdgeInsets.symmetric(vertical: 10), child:Column(children: [Text(sleepover.name, style:TextStyle(fontSize: 20, fontWeight: FontWeight.bold)), 
-            Text("check-in: ${sleepover.checkin == null ? "??" : "${sleepover.checkin!.hour}:${sleepover.checkin!.minute}"}"),
-            Text("checkout: ${sleepover.checkout == null ? "??" : "${sleepover.checkout!.hour}:${sleepover.checkout!.minute}"}"),
-            Text("cost: ${ sleepover.price.toString() + sleepover.currency}")
-            ],),),
-             ActivityPopupMenu(activity: sleepover)
-          ],
-       )
-    );
+    return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Card(
+            color: Colors.green[200],
+            elevation: 10,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+              side: BorderSide(color: Colors.black, width: 2.0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.house)),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    children: [
+                      Text(sleepover.name,
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
+                      Text(
+                          "check-in: ${sleepover.checkin == null ? "??" : "${sleepover.checkin!.hour}:${sleepover.checkin!.minute}"}"),
+                      Text(
+                          "checkout: ${sleepover.checkout == null ? "??" : "${sleepover.checkout!.hour}:${sleepover.checkout!.minute}"}"),
+                      Text(
+                          "cost: ${sleepover.price.toString() + sleepover.currency}")
+                    ],
+                  ),
+                ),
+                ActivityPopupMenu(activity: sleepover)
+              ],
+            )));
   }
 }
 
@@ -329,23 +364,30 @@ class TransportWidget extends StatelessWidget {
   final Transport transport;
   @override
   Widget build(BuildContext context) {
-    return Card(
-        color: Colors.orange[200],
-        elevation: 10,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-          side: BorderSide(color: Colors.black, width: 2.0),
-        ),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.route)),
-           Padding(padding:EdgeInsets.symmetric(vertical: 10)  ,child: Column(children: [
-            Text("source: ${transport.source}"),
-            Text("dest: ${transport.dest}"),
-            ],),),
-             ActivityPopupMenu(activity: transport)
-          ],
-       )
-    );
+    return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Card(
+            color: Colors.orange[200],
+            elevation: 10,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+              side: BorderSide(color: Colors.black, width: 2.0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.route)),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    children: [
+                      Text("source: ${transport.source}"),
+                      Text("dest: ${transport.dest}"),
+                    ],
+                  ),
+                ),
+                ActivityPopupMenu(activity: transport)
+              ],
+            )));
   }
 }

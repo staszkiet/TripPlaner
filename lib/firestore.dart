@@ -1,13 +1,18 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tripplaner/todo_list.dart';
 import 'package:tripplaner/trip.dart';
 import 'package:tripplaner/day_activities.dart';
 import 'package:tripplaner/day.dart';
 
+UserCredential? uc;
+
 class FirestoreService {
-  final CollectionReference trips =
-      FirebaseFirestore.instance.collection('Trips');
+  final CollectionReference trips = FirebaseFirestore.instance
+      .collection('Users')
+      .doc(uc?.user?.uid)
+      .collection('Trips');
 
   Future<String> addTrip(Trip t) async {
     DocumentReference docRef = await trips.add(t.toJson());
@@ -57,15 +62,14 @@ class FirestoreService {
         .update(newOne.toJson());
   }
 
-  void updateToDoElementNotification(String tripId, ToDoElement element, int notificationID)
-  {
+  void updateToDoElementNotification(
+      String tripId, ToDoElement element, int notificationID) {
     final a = ToDoElement(description: element.description);
     a.notificationID = notificationID;
     trips.doc(tripId).collection('todo').doc(element.id).update(a.toJson());
   }
 
-  Future<String> addSleepover(
-      String tripId, String dayId, Sleepover a) async {
+  Future<String> addSleepover(String tripId, String dayId, Sleepover a) async {
     DocumentReference docRef = await trips
         .doc(tripId)
         .collection('days')
@@ -96,7 +100,7 @@ class FirestoreService {
     return docRef.id;
   }
 
-    Future<String> addPhoto(String tripId, String dayId, UploadedPhoto p) async {
+  Future<String> addPhoto(String tripId, String dayId, UploadedPhoto p) async {
     DocumentReference docRef = await trips
         .doc(tripId)
         .collection('days')
@@ -118,7 +122,7 @@ class FirestoreService {
   //   final urlDownload = await snapshot.ref.getDownloadURL();
 
   //   return urlDownload;
-    
+
   // }
 
   Future<String> addToDoItem(String tripId, ToDoElement e) async {
@@ -126,7 +130,6 @@ class FirestoreService {
         await trips.doc(tripId).collection('todo').add(e.toJson());
     return docRef.id;
   }
-
 
   Stream<QuerySnapshot> getToDoStream(String tripId) {
     return trips.doc(tripId).collection('todo').snapshots();
@@ -159,7 +162,7 @@ class FirestoreService {
         .snapshots();
   }
 
-    Stream<QuerySnapshot> getSleepoversStream(String tripId, String dayId) {
+  Stream<QuerySnapshot> getSleepoversStream(String tripId, String dayId) {
     return trips
         .doc(tripId)
         .collection('days')
@@ -188,7 +191,7 @@ class FirestoreService {
         .delete();
   }
 
-    void deletePhoto(String tripId, String dayId, String photoId) {
+  void deletePhoto(String tripId, String dayId, String photoId) {
     trips
         .doc(tripId)
         .collection('days')
@@ -198,7 +201,7 @@ class FirestoreService {
         .delete();
   }
 
-    void deleteSleepover(String tripId, String dayId, String sleepoverId) {
+  void deleteSleepover(String tripId, String dayId, String sleepoverId) {
     trips
         .doc(tripId)
         .collection('days')
@@ -207,7 +210,6 @@ class FirestoreService {
         .doc(sleepoverId)
         .delete();
   }
-
 
   void markItemAsDone(String tripId, ToDoElement element) async {
     trips.doc(tripId).collection('todo').doc(element.id).delete();
@@ -220,12 +222,10 @@ class FirestoreService {
     return docRef.id;
   }
 
-
   Future<List<Day>> fetchDaysWithAttractions(String tripId) async {
     List<Day> days = [];
 
-    QuerySnapshot daySnapshot = await FirebaseFirestore.instance
-        .collection('Trips')
+    QuerySnapshot daySnapshot = await trips
         .doc(tripId)
         .collection('days')
         .orderBy('dayDate', descending: false)
@@ -234,24 +234,21 @@ class FirestoreService {
     for (var dayDoc in daySnapshot.docs) {
       Day day = Day.fromJson(dayDoc.data() as Map<String, dynamic>, dayDoc.id);
 
-      QuerySnapshot attractionSnapshot = await FirebaseFirestore.instance
-          .collection('Trips')
+      QuerySnapshot attractionSnapshot = await trips
           .doc(tripId)
           .collection('days')
           .doc(day.id)
           .collection('attractions')
           .get();
 
-      QuerySnapshot transportSnapshot = await FirebaseFirestore.instance
-          .collection('Trips')
+      QuerySnapshot transportSnapshot = await trips
           .doc(tripId)
           .collection('days')
           .doc(day.id)
           .collection('transport')
           .get();
 
-      QuerySnapshot sleepoversSnapshot = await FirebaseFirestore.instance
-          .collection('Trips')
+      QuerySnapshot sleepoversSnapshot = await trips
           .doc(tripId)
           .collection('days')
           .doc(day.id)

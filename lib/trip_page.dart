@@ -31,7 +31,6 @@ class TripPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header with the trip name
                   Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 30),
@@ -41,14 +40,13 @@ class TripPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // List of days
                   ...trip.days.map((day) {
                     return Provider<Trip>.value(
                       value: trip,
                       child: Column(
                         children: [
                           DayWidget(day: day),
-                          SizedBox(height: 20), 
+                          SizedBox(height: 20),
                         ],
                       ),
                     );
@@ -66,13 +64,12 @@ class TripPage extends StatelessWidget {
                       onPressed: () async {
                         trip.days = await FirestoreService()
                             .fetchDaysWithAttractions(trip.id);
-                          if(context.mounted)
-                          {
-                            Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => TripMapView(t: trip))); 
-                          }
+                        if (context.mounted) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TripMapView(t: trip)));
+                        }
                       },
                       icon: Icon(Icons.map_outlined)),
                   IconButton(
@@ -177,12 +174,11 @@ class _DayWidgetState extends State<DayWidget> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => MultiProvider(
-                                  
                                     providers: [
                                       Provider.value(value: widget.day),
                                       Provider.value(value: trip)
                                     ],
-                                      child: DayPage(day: widget.day),
+                                    child: DayPage(day: widget.day),
                                   )));
                     },
                     icon: Icon(Icons.info),
@@ -549,7 +545,6 @@ class SleepoverSmallListViewElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
