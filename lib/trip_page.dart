@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:tripplaner/toDoList.dart';
+import 'package:tripplaner/todo_list.dart';
 import 'package:tripplaner/trip.dart';
 import 'package:tripplaner/day.dart';
 import 'package:provider/provider.dart';
-import 'package:tripplaner/dayActivities.dart';
-import 'package:tripplaner/activityCreationForms.dart';
-import 'package:tripplaner/tripMapView.dart';
+import 'package:tripplaner/day_activities.dart';
+import 'package:tripplaner/activity_creation_forms.dart';
+import 'package:tripplaner/trip_map_view.dart';
 import 'package:intl/intl.dart';
 import 'package:tripplaner/firestore.dart';
 
@@ -48,11 +48,11 @@ class TripPage extends StatelessWidget {
                       child: Column(
                         children: [
                           DayWidget(day: day),
-                          SizedBox(height: 20), // Separator between days
+                          SizedBox(height: 20), 
                         ],
                       ),
                     );
-                  }).toList(),
+                  })
                 ],
               ),
             )),
@@ -66,10 +66,13 @@ class TripPage extends StatelessWidget {
                       onPressed: () async {
                         trip.days = await FirestoreService()
                             .fetchDaysWithAttractions(trip.id);
-                        Navigator.push(
+                          if(context.mounted)
+                          {
+                            Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => tripMapView(t: trip)));
+                                builder: (context) => TripMapView(t: trip))); 
+                          }
                       },
                       icon: Icon(Icons.map_outlined)),
                   IconButton(
@@ -174,11 +177,12 @@ class _DayWidgetState extends State<DayWidget> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => MultiProvider(
-                                    child: DayPage(day: widget.day),
+                                  
                                     providers: [
                                       Provider.value(value: widget.day),
                                       Provider.value(value: trip)
                                     ],
+                                      child: DayPage(day: widget.day),
                                   )));
                     },
                     icon: Icon(Icons.info),
@@ -322,8 +326,6 @@ class AttractionsSmallListViewElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final trip = Provider.of<Trip>(context, listen: false);
-    final day = Provider.of<Day>(context, listen: false);
     return Padding(
         padding: EdgeInsets.symmetric(horizontal: 10),
         child: Row(children: [
@@ -487,7 +489,7 @@ class ActivityPopupMenu extends StatelessWidget {
               onSelected: (value) async {
                 if (value == "delete") {
                   FirestoreService()
-                      .deleteSleepover(trip.id, trip.id, sleepover.id);
+                      .deleteSleepover(trip.id, day.id, sleepover.id);
                 } else {
                   final a = await Navigator.push(
                       context,
@@ -547,9 +549,6 @@ class SleepoverSmallListViewElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final firestoreService = FirestoreService();
-    final trip = Provider.of<Trip>(context, listen: false);
-    final day = Provider.of<Day>(context, listen: false);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10),
@@ -607,14 +606,12 @@ class TransportSmallListViewElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final trip = Provider.of<Trip>(context, listen: false);
-    final day = Provider.of<Day>(context, listen: false);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Padding(
             padding: EdgeInsets.all(8.0), child: Icon(Icons.airplanemode_on)),
-        Flexible(child: Text(transport.source + " - " + transport.dest)),
+        Flexible(child: Text("${transport.source} - ${transport.dest}")),
         ActivityPopupMenu(activity: transport)
       ]),
     );

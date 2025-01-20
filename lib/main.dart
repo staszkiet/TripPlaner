@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:tripplaner/authPage.dart';
+import 'package:tripplaner/auth_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
+import 'package:tripplaner/notifications.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,18 +12,7 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
 );
 FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
-
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
-  const AndroidInitializationSettings androidSettings =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  const InitializationSettings initializationSettings =
-      InitializationSettings(android: androidSettings);
-
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
+NotificationManager.initialize();
   
   runApp(MyApp());
 }

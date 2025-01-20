@@ -4,11 +4,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class LocationPicker extends StatefulWidget {
   const LocationPicker({super.key});
   @override
-  _LocationPickerState createState() => _LocationPickerState();
+  LocationPickerState createState() => LocationPickerState();
 }
 
-class _LocationPickerState extends State<LocationPicker> {
-  late GoogleMapController _mapController;
+class LocationPickerState extends State<LocationPicker> {
   LatLng? _selectedLocation;
 
   @override
@@ -34,9 +33,6 @@ class _LocationPickerState extends State<LocationPicker> {
           target: LatLng(37.7749, -122.4194),
           zoom: 12,
         ),
-        onMapCreated: (controller) {
-          _mapController = controller;
-        },
         onTap: (position) {
             setState(() {
               _selectedLocation = LatLng(position.latitude, position.longitude);

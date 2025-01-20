@@ -1,5 +1,5 @@
 import 'package:tripplaner/day.dart';
-import 'package:tripplaner/toDoList.dart';
+import 'package:tripplaner/todo_list.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 

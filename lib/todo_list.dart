@@ -1,28 +1,25 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tripplaner/firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:tripplaner/notifications.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:async';
 
 class ToDoElement {
   final String description;
-  bool notification = false;
-  DateTime? notificationTime;
+  int notificationID;
   String id = "";
-  ToDoElement({required this.description, this.notification = false, this.id = "", this.notificationTime});
+  ToDoElement(
+      {required this.description, this.id = "", this.notificationID = -1});
 
   factory ToDoElement.fromJson(Map<String, dynamic> json, String id) {
     return ToDoElement(
-        description: json['description'], 
-        notification: json['notification'] ?? false, 
-        notificationTime: json["notificationTime"] == null ? null : (json["notificationTime"] as Timestamp).toDate(),
+        description: json['description'],
+        notificationID: json["notificationID"],
         id: id);
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "description": description,
-      "notification": notification,
-      "notificationTime": notificationTime
-    };
+    return {"description": description, "notificationID": notificationID};
   }
 }
 
@@ -43,8 +40,7 @@ class _ToDoListPageState extends State<ToDoListPage> {
         appBar: AppBar(
           title: Text("TODO List"),
         ),
-        body: Container(
-            child: Column(children: [
+        body: Column(children: [
           Expanded(
             child: StreamBuilder(
                 stream: firestoreService.getToDoStream(widget.tripId),
@@ -90,7 +86,7 @@ class _ToDoListPageState extends State<ToDoListPage> {
                         },
                         icon: Icon(Icons.done))
                   ])))
-        ])));
+        ]));
   }
 }
 
@@ -105,6 +101,31 @@ class ToDoElementWidget extends StatefulWidget {
 
 class _ToDoElementWidgetState extends State<ToDoElementWidget> {
   bool notificationOn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkNotificationStatus();
+  }
+
+  Future<void> _checkNotificationStatus() async {
+    final List<PendingNotificationRequest> notifications =
+        await NotificationManager().notifications;
+    final notification =
+        findNotificationById(notifications, widget.element.notificationID);
+    setState(() {
+      notificationOn = notification != null;
+    });
+  }
+
+  PendingNotificationRequest? findNotificationById(
+      List<PendingNotificationRequest> notifications, int id) {
+    try {
+      return notifications.firstWhere((notification) => notification.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,22 +145,24 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                   )),
               Divider(color: Colors.black),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(padding: EdgeInsets.only(left: 10), child:Icon(Icons.create)),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                        child: Text(
-                          widget.element.description,
-                          style: TextStyle(fontSize: 16),
-                        ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Icon(Icons.create)),
+                  Expanded(
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      child: Text(
+                        widget.element.description,
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
-                  ],
-                
+                  ),
+                ],
               ),
               Divider(
                 color: Colors.black,
@@ -155,10 +178,47 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
                     icon: Icon(Icons.done),
                   ),
                   IconButton(
-                    onPressed: () {
-                      setState(() {
-                        notificationOn = !notificationOn;
-                      });
+                    onPressed: () async {
+                      if (!notificationOn) {
+                        DateTime? selectedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
+                        );
+
+                        if (selectedDate == null) return;
+
+                        TimeOfDay? selectedTime = context.mounted ? await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ) : null;
+
+                        if (selectedTime == null) return;
+
+                        final DateTime scheduledDateTime = DateTime(
+                          selectedDate.year,
+                          selectedDate.month,
+                          selectedDate.day,
+                          selectedTime.hour,
+                          selectedTime.minute,
+                        );
+                        int id = await NotificationManager()
+                            .scheduleNotification(scheduledDateTime);
+                        widget.element.notificationID = id;
+                        FirestoreService().updateToDoElementNotification(
+                            widget.tripId, widget.element, id);
+                        setState(() {
+                          notificationOn = !notificationOn;
+                        });
+                      } else {
+                        NotificationManager()
+                            .cancelNotification(widget.element.notificationID);
+                        setState(() {
+                          notificationOn = !notificationOn;
+                        });
+                      }
                     },
                     icon: Icon(notificationOn
                         ? Icons.notifications_off

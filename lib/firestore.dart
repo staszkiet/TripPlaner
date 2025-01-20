@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tripplaner/toDoList.dart';
+import 'package:tripplaner/todo_list.dart';
 import 'package:tripplaner/trip.dart';
-import 'package:tripplaner/dayActivities.dart';
+import 'package:tripplaner/day_activities.dart';
 import 'package:tripplaner/day.dart';
 
 class FirestoreService {
@@ -55,6 +55,13 @@ class FirestoreService {
         .collection('sleepovers')
         .doc(old.id)
         .update(newOne.toJson());
+  }
+
+  void updateToDoElementNotification(String tripId, ToDoElement element, int notificationID)
+  {
+    final a = ToDoElement(description: element.description);
+    a.notificationID = notificationID;
+    trips.doc(tripId).collection('todo').doc(element.id).update(a.toJson());
   }
 
   Future<String> addSleepover(

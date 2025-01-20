@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tripplaner/firestore.dart';
 import 'package:tripplaner/trip.dart';
-import 'package:tripplaner/tripCreationForm.dart';
-import 'package:tripplaner/tripPage.dart';
+import 'package:tripplaner/trip_creation_form.dart';
+import 'package:tripplaner/trip_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tripplaner/day.dart';
 
@@ -139,11 +139,14 @@ class TripListElement extends StatelessWidget {
                     List<Day> d = await firestoreService
                         .fetchDaysWithAttractions(trip.id);
                     trip.days = d;
-                    Navigator.push(
+                    if(context.mounted)
+                    {
+                      Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => TripPage(trip: trip)),
                     );
+                    }
                   },
                   icon: Icon(Icons.arrow_right_alt_rounded)),
             )

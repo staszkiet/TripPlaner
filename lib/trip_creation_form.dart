@@ -17,7 +17,6 @@ class _TripCreationFormState extends State<TripCreationForm> {
   DateTime? startDate;
   DateTime? endDate;
 
-  // Function to show date picker
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -47,9 +46,9 @@ class _TripCreationFormState extends State<TripCreationForm> {
   appBar: AppBar(
     title: Text("Add Trip"),
     leading: IconButton(
-      icon: Icon(Icons.arrow_back), // Back arrow icon
+      icon: Icon(Icons.arrow_back),
       onPressed: () {
-        Navigator.pop(context); // Pops the navigator when pressed
+        Navigator.pop(context); 
       },
     ),
   ),
@@ -144,6 +143,7 @@ class _TripCreationFormState extends State<TripCreationForm> {
                     if (endDate == null) {
                       return "Pick an end date";
                     }
+                    return null;
                   },
                 ),
                 Padding(

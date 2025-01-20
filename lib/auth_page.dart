@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:tripplaner/tripListPage.dart';
+import 'package:tripplaner/trip_list_page.dart';
 
 class LoginForm extends StatefulWidget {
   LoginForm({super.key});
@@ -20,15 +20,18 @@ class _LoginFormState extends State<LoginForm> {
       {required BuildContext context,
       required String email,
       required String password}) async {
-    try {
       await widget._auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      Navigator.pushReplacement(
+      if(context.mounted)
+      {
+          Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => TripListPage()));
-    } catch (e) {}
+      }
+   
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +107,6 @@ class _LoginFormState extends State<LoginForm> {
                   ),
                 ),
                 SizedBox(width: 100, child: ElevatedButton(
-                  
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         login(
@@ -114,7 +116,7 @@ class _LoginFormState extends State<LoginForm> {
                       }
                     },
                     child: const Text("Log in"))),
-                    Padding(padding: EdgeInsets.symmetric(vertical: 30), child:SignUpText())
+                    Padding(padding: EdgeInsets.symmetric(vertical: 30), child:SignUpText()),
               ],
             )),
         Flexible(child: Container())
@@ -123,15 +125,15 @@ class _LoginFormState extends State<LoginForm> {
   }
 }
 
-class registrationForm extends StatefulWidget {
-  registrationForm({super.key});
+class RegistrationForm extends StatefulWidget {
+  RegistrationForm({super.key});
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
-  State<registrationForm> createState() => _registrationFormState();
+  State<RegistrationForm> createState() => _RegistrationFormState();
 }
 
-class _registrationFormState extends State<registrationForm> {
+class _RegistrationFormState extends State<RegistrationForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -145,8 +147,11 @@ class _registrationFormState extends State<registrationForm> {
         email: email,
         password: password,
       );
-      Navigator.pushReplacement(
+      if(context.mounted)
+      {
+          Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => TripListPage()));
+      }
   }
 
   @override
@@ -223,7 +228,8 @@ class _registrationFormState extends State<registrationForm> {
                           password: _passwordController.text);
                     }
                   },
-                  child: const Text("Sign up"))
+                  child: const Text("Sign up")),
+                 
             ],
           )), Flexible(flex:1, child:Container())])),
     );
@@ -244,10 +250,9 @@ class SignUpText extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    // Navigate to Register Page
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => registrationForm()),
+                      MaterialPageRoute(builder: (context) => RegistrationForm()),
                     );
                   },
                   child: Text(

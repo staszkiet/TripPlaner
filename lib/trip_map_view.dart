@@ -1,47 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:tripplaner/activityCreationForms.dart';
-import 'package:tripplaner/dayActivities.dart';
+import 'package:tripplaner/activity_creation_forms.dart';
+import 'package:tripplaner/day_activities.dart';
 import 'package:tripplaner/trip.dart';
 import 'package:tripplaner/day.dart';
-import 'package:tripplaner/directionsRepository.dart';
+import 'package:tripplaner/directions_repository.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tripplaner/firestore.dart';
 
 class CustomMarker extends Marker {
-  Activity? activity;
-  CustomMarker(
+  final Activity? activity;
+  const CustomMarker(
       {required this.activity,
-      required MarkerId markerId,
-      required BitmapDescriptor icon,
-      required LatLng position,
-      required InfoWindow infoWindow,
-      Function()? onTap})
-      : super(
-            markerId: markerId,
-            icon: icon,
-            position: position,
-            infoWindow: infoWindow,
-            onTap: onTap);
+      required super.markerId,
+      required super.icon,
+      required super.position,
+      required super.infoWindow,
+      Function()? super.onTap});
 }
 
-class tripMapView extends StatefulWidget {
-  const tripMapView({super.key, required this.t});
+class TripMapView extends StatefulWidget {
+  const TripMapView({super.key, required this.t});
 
   final Trip t;
 
   @override
-  State<tripMapView> createState() => _tripMapViewState();
+  State<TripMapView> createState() => _TripMapViewState();
 }
 
-class _tripMapViewState extends State<tripMapView> {
-  Set<Polyline> lines = Set();
+class _TripMapViewState extends State<TripMapView> {
+  Set<Polyline> lines = {};
   bool poliloaded = false;
   bool editMode = false;
   Activity? selected;
   String dayIndex = "";
 
-  void AddDirections({required LatLng origin, required LatLng dest}) async {
+  void addDirections({required LatLng origin, required LatLng dest}) async {
     final directions = await DirectionsRepository()
         .getDirections(origin: origin, destination: dest);
     List<LatLng> list = List<LatLng>.empty(growable: true);

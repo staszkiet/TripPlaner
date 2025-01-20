@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:tripplaner/dayActivities.dart';
+import 'package:tripplaner/day_activities.dart';
 import 'package:provider/provider.dart';
-import 'package:tripplaner/tripPage.dart';
+import 'package:tripplaner/trip_page.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:tripplaner/firestore.dart';
 import 'package:tripplaner/trip.dart';
@@ -170,11 +170,17 @@ class DayPage extends StatelessWidget {
   }
 }
 
-class PhotoListViewElement extends StatelessWidget {
-  PhotoListViewElement({super.key, required this.photo});
+class PhotoListViewElement extends StatefulWidget {
+  const PhotoListViewElement({super.key, required this.photo});
   final UploadedPhoto photo;
 
+  @override
+  State<PhotoListViewElement> createState() => _PhotoListViewElementState();
+}
+
+class _PhotoListViewElementState extends State<PhotoListViewElement> {
   Offset? _tapPosition;
+
   void _storePosition(TapDownDetails details) {
     _tapPosition = details.globalPosition;
   }
@@ -185,11 +191,10 @@ class PhotoListViewElement extends StatelessWidget {
     final day = Provider.of<Day>(context);
     return GestureDetector(
       onTap: () {
-        // Handle image tap
         showDialog(
           context: context,
           builder: (context) =>
-              Dialog(child: Image.file(File(photo.urlDownload))),
+              Dialog(child: Image.file(File(widget.photo.urlDownload))),
         );
       },
       onTapDown: _storePosition,
@@ -205,14 +210,14 @@ class PhotoListViewElement extends StatelessWidget {
               ),
               items: [PopupMenuItem(value: "delete", child: Text("delete"))]);
           if (result == "delete") {
-            FirestoreService().deletePhoto(trip.id, day.id, photo.id);
+            FirestoreService().deletePhoto(trip.id, day.id, widget.photo.id);
           }
         }
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.0),
         child: Image.file(
-          File(photo.urlDownload),
+          File(widget.photo.urlDownload),
           width: 100,
           height: 100,
           fit: BoxFit.cover,
@@ -281,8 +286,8 @@ class AttractionsWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.pin_drop)),
             Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Column(children: [Text(attraction.name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),), 
-            Text("start: ${attraction.start == null ? "??" : attraction.start!.hour.toString() + ":" + attraction.start!.minute.toString()}"),
-            Text("end: ${attraction.end == null ? "??" : attraction.end!.hour.toString() + ":" + attraction.end!.minute.toString()}"),
+            Text("start: ${attraction.start == null ? "??" : "${attraction.start!.hour}:${attraction.start!.minute}"}"),
+            Text("end: ${attraction.end == null ? "??" : "${attraction.end!.hour}:${attraction.end!.minute}"}"),
             Text("cost: ${ attraction.price.toString() + attraction.currency}")
             ],),),
              ActivityPopupMenu(activity: attraction)
@@ -308,8 +313,8 @@ class SleepoverWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.house)),
             Padding(padding: EdgeInsets.symmetric(vertical: 10), child:Column(children: [Text(sleepover.name, style:TextStyle(fontSize: 20, fontWeight: FontWeight.bold)), 
-            Text("check-in: ${sleepover.checkin == null ? "??" : sleepover.checkin!.hour.toString() + ":" + sleepover.checkin!.minute.toString()}"),
-            Text("checkout: ${sleepover.checkout == null ? "??" : sleepover.checkout!.hour.toString() + ":" + sleepover.checkout!.minute.toString()}"),
+            Text("check-in: ${sleepover.checkin == null ? "??" : "${sleepover.checkin!.hour}:${sleepover.checkin!.minute}"}"),
+            Text("checkout: ${sleepover.checkout == null ? "??" : "${sleepover.checkout!.hour}:${sleepover.checkout!.minute}"}"),
             Text("cost: ${ sleepover.price.toString() + sleepover.currency}")
             ],),),
              ActivityPopupMenu(activity: sleepover)
@@ -335,8 +340,8 @@ class TransportWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.route)),
            Padding(padding:EdgeInsets.symmetric(vertical: 10)  ,child: Column(children: [
-            Text("source: " + transport.source),
-            Text("dest: " + transport.dest),
+            Text("source: ${transport.source}"),
+            Text("dest: ${transport.dest}"),
             ],),),
              ActivityPopupMenu(activity: transport)
           ],
