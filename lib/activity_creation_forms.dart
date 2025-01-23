@@ -162,7 +162,8 @@ class _AttractionCreationFormState extends State<AttractionCreationForm> {
                       child: TextFormField(
                         controller: _amountController,
                         keyboardType: TextInputType.number,
-                        validator: (value) => (_amountController.text == "" ||
+                        validator: (value) => (!(_amountController.text ==
+                                    "") &&
                                 double.tryParse(_amountController.text) == null)
                             ? "invalid number"
                             : null,

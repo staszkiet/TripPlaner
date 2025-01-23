@@ -46,7 +46,7 @@ class NotificationManager {
     await flutterLocalNotificationsPlugin.zonedSchedule(
       notificationId,
       'TODO',
-      'Test Body',
+      desc,
       tz.TZDateTime.from(time, tz.local),
       platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

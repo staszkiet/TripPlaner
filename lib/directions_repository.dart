@@ -28,9 +28,13 @@ class Directions {
   });
 
   factory Directions.fromMap(Map<String, dynamic> map) {
-    final data = Map<String, dynamic>.from(map['routes'][0]);
-    return Directions(
-        polylinePoints: PolylinePoints()
-            .decodePolyline(data['overview_polyline']['points']));
+    if (!map['routes'].isEmpty) {
+      final data = Map<String, dynamic>.from(map['routes'][0]);
+      return Directions(
+          polylinePoints: PolylinePoints()
+              .decodePolyline(data['overview_polyline']['points']));
+    } else {
+      return Directions(polylinePoints: List<PointLatLng>.empty());
+    }
   }
 }

@@ -206,7 +206,8 @@ class _ToDoElementWidgetState extends State<ToDoElementWidget> {
                           selectedTime.minute,
                         );
                         int id = await NotificationManager()
-                            .scheduleNotification(scheduledDateTime);
+                            .scheduleNotification(scheduledDateTime,
+                                desc: widget.element.description);
                         widget.element.notificationID = id;
                         FirestoreService().updateToDoElementNotification(
                             widget.tripId, widget.element, id);

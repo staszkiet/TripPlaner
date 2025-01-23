@@ -9,15 +9,21 @@ import 'package:tripplaner/trip_map_view.dart';
 import 'package:intl/intl.dart';
 import 'package:tripplaner/firestore.dart';
 
-class TripPage extends StatelessWidget {
+class TripPage extends StatefulWidget {
   const TripPage({super.key, required this.trip});
   final Trip trip;
 
   @override
+  State<TripPage> createState() => _TripPageState();
+}
+
+class _TripPageState extends State<TripPage> {
+  bool loading = false;
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(trip.name),
+          title: Text(widget.trip.name),
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
@@ -25,35 +31,37 @@ class TripPage extends StatelessWidget {
             },
           ),
         ),
-        body: Container(
-            color: Colors.blue[50],
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 30),
-                      child: Text(
-                        trip.name,
-                        style: TextStyle(fontSize: 40),
+        body: loading
+            ? Center(child: CircularProgressIndicator())
+            : Container(
+                color: Colors.blue[50],
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 30),
+                          child: Text(
+                            widget.trip.name,
+                            style: TextStyle(fontSize: 40),
+                          ),
+                        ),
                       ),
-                    ),
+                      ...widget.trip.days.map((day) {
+                        return Provider<Trip>.value(
+                          value: widget.trip,
+                          child: Column(
+                            children: [
+                              DayWidget(day: day),
+                              SizedBox(height: 20),
+                            ],
+                          ),
+                        );
+                      })
+                    ],
                   ),
-                  ...trip.days.map((day) {
-                    return Provider<Trip>.value(
-                      value: trip,
-                      child: Column(
-                        children: [
-                          DayWidget(day: day),
-                          SizedBox(height: 20),
-                        ],
-                      ),
-                    );
-                  })
-                ],
-              ),
-            )),
+                )),
         bottomNavigationBar: BottomAppBar(
             height: 60,
             color: Colors.grey,
@@ -62,13 +70,20 @@ class TripPage extends StatelessWidget {
                 children: [
                   IconButton(
                       onPressed: () async {
-                        trip.days = await FirestoreService()
-                            .fetchDaysWithAttractions(trip.id);
+                        setState(() {
+                          loading = true;
+                        });
+                        widget.trip.days = await FirestoreService()
+                            .fetchDaysWithAttractions(widget.trip.id);
                         if (context.mounted) {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => TripMapView(t: trip)));
+                                  builder: (context) =>
+                                      TripMapView(t: widget.trip)));
+                          setState(() {
+                            loading = false;
+                          });
                         }
                       },
                       icon: Icon(Icons.map_outlined)),
@@ -78,11 +93,45 @@ class TripPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ToDoListPage(
-                                tripId: trip.id,
+                                tripId: widget.trip.id,
                               ),
                             ));
                       },
-                      icon: Icon(Icons.list))
+                      icon: Icon(Icons.list)),
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Confirm Delete'),
+                            content: Text(
+                                'Are you sure you want to delete this trip?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  FirestoreService().deletetrip(widget.trip);
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: Icon(Icons.delete),
+                  )
                 ])));
   }
 }

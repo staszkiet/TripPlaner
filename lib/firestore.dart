@@ -24,6 +24,42 @@ class FirestoreService {
     return docRef.id;
   }
 
+  void deletetrip(Trip t) {
+    for (int i = 0; i < t.days.length; i++) {
+      for (int j = 0; j < t.days[i].attractions.length; j++) {
+        deleteAttraction(t.id, t.days[i].id, t.days[i].attractions[j].id);
+      }
+      for (int j = 0; j < t.days[i].sleepovers.length; j++) {
+        deleteSleepover(t.id, t.days[i].id, t.days[i].sleepovers[j].id);
+      }
+      for (int j = 0; j < t.days[i].transport.length; j++) {
+        deleteTransport(t.id, t.days[i].id, t.days[i].transport[j].id);
+      }
+      trips
+          .doc(t.id)
+          .collection('days')
+          .doc(t.days[i].id)
+          .collection('photos')
+          .get()
+          .then((snapshot) {
+        for (DocumentSnapshot ds in snapshot.docs) {
+          ds.reference.delete();
+        }
+      });
+    }
+    trips.doc(t.id).collection('days').get().then((snapshot) {
+      for (DocumentSnapshot ds in snapshot.docs) {
+        ds.reference.delete();
+      }
+    });
+    trips.doc(t.id).collection('todo').get().then((snapshot) {
+      for (DocumentSnapshot ds in snapshot.docs) {
+        ds.reference.delete();
+      }
+    });
+    trips.doc(t.id).delete();
+  }
+
   Stream<QuerySnapshot> getTripsStream() {
     final tripsStream = trips.snapshots();
     return tripsStream;

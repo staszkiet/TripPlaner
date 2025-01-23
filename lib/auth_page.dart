@@ -21,21 +21,30 @@ class _LoginFormState extends State<LoginForm> {
       {required BuildContext context,
       required String email,
       required String password}) async {
-    UserCredential credentials = await widget._auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-    uc = credentials;
-    if (context.mounted) {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => TripListPage()));
+    try {
+      UserCredential credentials =
+          await widget._auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      uc = credentials;
+      if (context.mounted) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => TripListPage()));
+      }
+    } on FirebaseAuthException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error while logging in: ${e.message}")));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-        child: Form(
+    return Scaffold(
+        body: Material(
+            child: Form(
       key: _formKey,
       child: Row(children: [
         Flexible(child: Container()),
@@ -129,7 +138,7 @@ class _LoginFormState extends State<LoginForm> {
             )),
         Flexible(child: Container())
       ]),
-    ));
+    )));
   }
 }
 
