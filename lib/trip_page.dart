@@ -21,6 +21,7 @@ class _TripPageState extends State<TripPage> {
   bool loading = false;
   @override
   Widget build(BuildContext context) {
+    print("TripID: ${widget.trip.id}");
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.trip.name),
@@ -35,33 +36,56 @@ class _TripPageState extends State<TripPage> {
             ? Center(child: CircularProgressIndicator())
             : Container(
                 color: Colors.blue[50],
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 30),
-                          child: Text(
-                            widget.trip.name,
-                            style: TextStyle(fontSize: 40),
+                child: StreamBuilder(
+                  stream: FirestoreService()
+                      .getDaysStream(widget.trip.id), // Stream of days
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(child: Text("Error loading days"));
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(
+                          child: Text("No days available for this trip"));
+                    }
+
+                    final days = snapshot.data!.docs.map((doc) {
+                      return Day.fromJson(
+                          doc.data() as Map<String, dynamic>, doc.id);
+                    }).toList();
+
+                    return SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 30),
+                              child: Text(
+                                widget.trip.name,
+                                style: TextStyle(fontSize: 40),
+                              ),
+                            ),
                           ),
-                        ),
+                          ...days.map((day) {
+                            return Provider<Trip>.value(
+                              value: widget.trip,
+                              child: Column(
+                                children: [
+                                  DayWidget(day: day),
+                                  SizedBox(height: 20),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ],
                       ),
-                      ...widget.trip.days.map((day) {
-                        return Provider<Trip>.value(
-                          value: widget.trip,
-                          child: Column(
-                            children: [
-                              DayWidget(day: day),
-                              SizedBox(height: 20),
-                            ],
-                          ),
-                        );
-                      })
-                    ],
-                  ),
-                )),
+                    );
+                  },
+                ),
+              ),
         bottomNavigationBar: BottomAppBar(
             height: 60,
             color: Colors.grey,
@@ -150,10 +174,11 @@ class _DayWidgetState extends State<DayWidget> {
   @override
   Widget build(BuildContext context) {
     var trip = Provider.of<Trip>(context, listen: false);
+    print("dayIdInWidget: ${widget.day.id} trip: ${trip.id}");
     if (!expanded) {
       return buildUnexpandedDayWidget();
     } else {
-      return buildExpandedDayWidget(trip.id, widget.day);
+      return buildExpandedDayWidget(trip.id);
     }
   }
 
@@ -199,7 +224,7 @@ class _DayWidgetState extends State<DayWidget> {
                 ])));
   }
 
-  Widget buildExpandedDayWidget(String tripId, Day day) {
+  Widget buildExpandedDayWidget(String tripId) {
     var trip = Provider.of<Trip>(context, listen: false);
     return Card(
         elevation: 10,
@@ -242,7 +267,8 @@ class _DayWidgetState extends State<DayWidget> {
                       icon: Icon(Icons.arrow_circle_up))
                 ]),
               ]),
-              Provider.value(value: day, child: AttractionsListUnderDay())
+              Provider.value(
+                  value: widget.day, child: AttractionsListUnderDay())
             ],
           ),
         ));
@@ -258,6 +284,7 @@ class AttractionsListUnderDay extends StatelessWidget {
   Widget build(BuildContext context) {
     final trip = Provider.of<Trip>(context, listen: false);
     final day = Provider.of<Day>(context, listen: false);
+    print("in attractions: trip: ${trip.id} day: ${day.id}");
     return Column(children: [
       Divider(color: Colors.black),
       Align(

@@ -172,11 +172,20 @@ class FirestoreService {
   }
 
   Stream<QuerySnapshot> getAttractionsStream(String tripId, String dayId) {
+    print("dayID: ${dayId}");
     return trips
         .doc(tripId)
         .collection('days')
         .doc(dayId)
         .collection('attractions')
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getDaysStream(String tripId) {
+    return trips
+        .doc(tripId)
+        .collection('days')
+        .orderBy('dayDate', descending: false)
         .snapshots();
   }
 

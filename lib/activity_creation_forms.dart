@@ -62,10 +62,12 @@ class _AttractionCreationFormState extends State<AttractionCreationForm> {
       _nameController.text = widget.toEdit!.name;
       initalized = true;
     }
-    _startController.text =
-        start == null ? "Select start " : "${start!.hour}:${start!.minute}";
-    _endController.text =
-        end == null ? "Select end date" : "${end!.hour}:${end!.minute}";
+    _startController.text = start == null
+        ? "Select start"
+        : "${start!.hour.toString().padLeft(2, '0')}:${start!.minute.toString().padLeft(2, '0')}";
+    _endController.text = end == null
+        ? "Select end date"
+        : "${end!.hour.toString().padLeft(2, '0')}:${end!.minute.toString().padLeft(2, '0')}";
     return Scaffold(
         appBar: AppBar(
           title: widget.toEdit == null
@@ -197,7 +199,10 @@ class _AttractionCreationFormState extends State<AttractionCreationForm> {
                               end: end,
                               location: location,
                               currency: _currencyController.text,
-                              price: double.parse(_amountController.text));
+                              price: double.tryParse(_amountController.text) ==
+                                      null
+                                  ? 0
+                                  : double.parse(_amountController.text));
                           Navigator.pop(context, toAdd);
                         }
                       },

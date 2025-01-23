@@ -240,7 +240,7 @@ class Day {
   List<Transport> transport = [];
   List<Sleepover> sleepovers = [];
   List<String> images = [];
-  String id = "";
+  String id;
 
   Day(this.dayDate, this.index, {this.id = ""});
 
