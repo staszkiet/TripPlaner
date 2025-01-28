@@ -10,6 +10,8 @@ import 'package:tripplaner/firestore.dart';
 import 'package:tripplaner/trip.dart';
 import "package:intl/intl.dart";
 
+final DateFormat timeFormatter = DateFormat('HH:mm');
+
 class DayPage extends StatelessWidget {
   const DayPage({super.key, required this.day});
   final Day day;
@@ -305,11 +307,11 @@ class AttractionsWidget extends StatelessWidget {
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                          "start: ${attraction.start == null ? "??" : "${attraction.start!.hour}:${attraction.start!.minute}"}"),
+                          "start: ${attraction.start == null ? "??" : timeFormatter.format(DateTime(0, 1, 1, attraction.start!.hour, attraction.start!.minute))}"),
                       Text(
-                          "end: ${attraction.end == null ? "??" : "${attraction.end!.hour}:${attraction.end!.minute}"}"),
+                          "end: ${attraction.end == null ? "??" : timeFormatter.format(DateTime(0, 1, 1, attraction.end!.hour, attraction.end!.minute))}"),
                       Text(
-                          "cost: ${attraction.price.toString() + attraction.currency}")
+                          "cost: ${attraction.price.toStringAsFixed(2)} ${attraction.currency}")
                     ],
                   ),
                 ),
@@ -345,11 +347,11 @@ class SleepoverWidget extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                       Text(
-                          "check-in: ${sleepover.checkin == null ? "??" : "${sleepover.checkin!.hour}:${sleepover.checkin!.minute}"}"),
+                          "check-in: ${sleepover.checkin == null ? "??" : timeFormatter.format(DateTime(0, 1, 1, sleepover.checkin!.hour, sleepover.checkin!.minute))}"),
                       Text(
-                          "checkout: ${sleepover.checkout == null ? "??" : "${sleepover.checkout!.hour}:${sleepover.checkout!.minute}"}"),
+                          "checkout: ${sleepover.checkout == null ? "??" : timeFormatter.format(DateTime(0, 1, 1, sleepover.checkout!.hour, sleepover.checkout!.minute))}"),
                       Text(
-                          "cost: ${sleepover.price.toString() + sleepover.currency}")
+                          "cost: ${sleepover.price.toStringAsFixed(2)} ${sleepover.currency}")
                     ],
                   ),
                 ),

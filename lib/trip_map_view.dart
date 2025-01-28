@@ -87,8 +87,8 @@ class _TripMapViewState extends State<TripMapView> {
                     BitmapDescriptor.hueGreen),
                 markerId: MarkerId("${idx++}"),
                 position: a.location!,
-                infoWindow:
-                    InfoWindow(title: "DAY ${d.index}: Attraction: ${a.name}"),
+                infoWindow: InfoWindow(
+                    title: "DAY ${d.index + 1}: Attraction: ${a.name}"),
                 activity: a,
                 onTap: () {
                   setState(() {
@@ -108,8 +108,8 @@ class _TripMapViewState extends State<TripMapView> {
                     BitmapDescriptor.hueRed),
                 markerId: MarkerId("${idx++}"),
                 position: s.location!,
-                infoWindow:
-                    InfoWindow(title: "DAY ${d.index}: Sleepover: ${s.name}"),
+                infoWindow: InfoWindow(
+                    title: "DAY ${d.index + 1}: Sleepover: ${s.name}"),
                 activity: s,
                 onTap: () {
                   setState(() {
@@ -129,8 +129,8 @@ class _TripMapViewState extends State<TripMapView> {
                     BitmapDescriptor.hueBlue),
                 markerId: MarkerId("${idx++}"),
                 position: t.sourceLocation!,
-                infoWindow:
-                    InfoWindow(title: "DAY ${d.index}: Source: ${t.source}"),
+                infoWindow: InfoWindow(
+                    title: "DAY ${d.index + 1}: Source: ${t.source}"),
                 activity: t,
                 onTap: () {
                   setState(() {
@@ -146,8 +146,8 @@ class _TripMapViewState extends State<TripMapView> {
                     BitmapDescriptor.hueBlue),
                 markerId: MarkerId("${idx++}"),
                 position: t.destLocation!,
-                infoWindow:
-                    InfoWindow(title: "DAY ${d.index}: Destination: ${t.dest}"),
+                infoWindow: InfoWindow(
+                    title: "DAY ${d.index + 1}: Destination: ${t.dest}"),
                 activity: t,
                 onTap: () {
                   setState(() {

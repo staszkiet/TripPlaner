@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:tripplaner/day_activities.dart';
 import 'package:tripplaner/location_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
+
+final DateFormat timeFormatter = DateFormat('HH:mm');
 
 class AttractionCreationForm extends StatefulWidget {
   const AttractionCreationForm({super.key, this.toEdit});
@@ -64,10 +67,10 @@ class _AttractionCreationFormState extends State<AttractionCreationForm> {
     }
     _startController.text = start == null
         ? "Select start"
-        : "${start!.hour.toString().padLeft(2, '0')}:${start!.minute.toString().padLeft(2, '0')}";
+        : timeFormatter.format(DateTime(0, 1, 1, start!.hour, start!.minute));
     _endController.text = end == null
         ? "Select end date"
-        : "${end!.hour.toString().padLeft(2, '0')}:${end!.minute.toString().padLeft(2, '0')}";
+        : timeFormatter.format(DateTime(0, 1, 1, end!.hour, end!.minute));
     return Scaffold(
         appBar: AppBar(
           title: widget.toEdit == null
@@ -262,12 +265,15 @@ class _SleepoverCreationFormState extends State<SleepoverCreationForm> {
       _nameController.text = widget.toEdit!.name;
       initialized = false;
     }
+
     _startController.text = checkin == null
-        ? "Select checkin hour "
-        : "${checkin!.hour}:${checkin!.minute}";
+        ? "Select checkin hour"
+        : timeFormatter
+            .format(DateTime(0, 1, 1, checkin!.hour, checkin!.minute));
     _endController.text = checkout == null
         ? "Select checkout hour"
-        : "${checkout!.hour}:${checkout!.minute}";
+        : timeFormatter
+            .format(DateTime(0, 1, 1, checkout!.hour, checkout!.minute));
     return Scaffold(
         appBar: AppBar(
           title: widget.toEdit == null

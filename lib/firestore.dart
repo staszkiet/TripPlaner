@@ -172,7 +172,6 @@ class FirestoreService {
   }
 
   Stream<QuerySnapshot> getAttractionsStream(String tripId, String dayId) {
-    print("dayID: ${dayId}");
     return trips
         .doc(tripId)
         .collection('days')

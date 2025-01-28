@@ -9,6 +9,8 @@ import 'package:tripplaner/trip_map_view.dart';
 import 'package:intl/intl.dart';
 import 'package:tripplaner/firestore.dart';
 
+final DateFormat timeFormatter = DateFormat('HH:mm');
+
 class TripPage extends StatefulWidget {
   const TripPage({super.key, required this.trip});
   final Trip trip;
@@ -21,7 +23,6 @@ class _TripPageState extends State<TripPage> {
   bool loading = false;
   @override
   Widget build(BuildContext context) {
-    print("TripID: ${widget.trip.id}");
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.trip.name),
@@ -79,7 +80,7 @@ class _TripPageState extends State<TripPage> {
                                 ],
                               ),
                             );
-                          }).toList(),
+                          })
                         ],
                       ),
                     );
@@ -174,7 +175,6 @@ class _DayWidgetState extends State<DayWidget> {
   @override
   Widget build(BuildContext context) {
     var trip = Provider.of<Trip>(context, listen: false);
-    print("dayIdInWidget: ${widget.day.id} trip: ${trip.id}");
     if (!expanded) {
       return buildUnexpandedDayWidget();
     } else {
@@ -284,7 +284,6 @@ class AttractionsListUnderDay extends StatelessWidget {
   Widget build(BuildContext context) {
     final trip = Provider.of<Trip>(context, listen: false);
     final day = Provider.of<Day>(context, listen: false);
-    print("in attractions: trip: ${trip.id} day: ${day.id}");
     return Column(children: [
       Divider(color: Colors.black),
       Align(
@@ -429,11 +428,11 @@ class AttractionsSmallListViewElement extends StatelessWidget {
                         children: [
                           attraction.start != null
                               ? Text(
-                                  "start: ${attraction.start!.hour}:${attraction.start!.minute} ")
+                                  "start: ${timeFormatter.format(DateTime(0, 1, 1, attraction.start!.hour, attraction.start!.minute))} ")
                               : Text(""),
                           attraction.end != null
                               ? Text(
-                                  "end: ${attraction.end!.hour}:${attraction.end!.minute}")
+                                  "end: ${timeFormatter.format(DateTime(0, 1, 1, attraction.end!.hour, attraction.end!.minute))}")
                               : Text(""),
                         ],
                       ),
@@ -649,11 +648,11 @@ class SleepoverSmallListViewElement extends StatelessWidget {
                     children: [
                       sleepover.checkin != null
                           ? Text(
-                              "start: ${sleepover.checkin!.hour}:${sleepover.checkin!.minute} ")
+                              "check-in: ${timeFormatter.format(DateTime(0, 1, 1, sleepover.checkin!.hour, sleepover.checkin!.minute))} ")
                           : Text(""),
                       sleepover.checkout != null
                           ? Text(
-                              "end: ${sleepover.checkout!.hour}:${sleepover.checkout!.minute}")
+                              "end: ${timeFormatter.format(DateTime(0, 1, 1, sleepover.checkout!.hour, sleepover.checkout!.minute))}")
                           : Text(""),
                     ],
                   ),
