@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "464505140988",
+    "project_id": "tripplaner-6fccd",
+    "storage_bucket": "tripplaner-6fccd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:464505140988:android:5abbfc8d12195c09bec979",
+        "android_client_info": {
+          "package_name": "com.example.tripplaner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnsayu1eFzw-ES2TKWa6nxa0b-uPQ1KhA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

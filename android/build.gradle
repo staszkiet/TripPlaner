@@ -1,3 +1,15 @@
+buildscript {
+    repositories {
+        google()  // Repozytorium Google, które zawiera pluginy Firebase
+        mavenCentral()
+    }
+    dependencies {
+        // Dodaj Firebase plugin do projektu
+        classpath 'com.google.gms:google-services:4.3.15'  // Plugin Google Services
+        classpath 'com.android.tools.build:gradle:7.3.1'
+    }
+}
+
 allprojects {
     repositories {
         google()
