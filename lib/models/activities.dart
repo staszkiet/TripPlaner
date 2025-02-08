@@ -106,20 +106,6 @@ class Sleepover extends Activity {
   }
 }
 
-class SleepoverProvider with ChangeNotifier {
-  Sleepover? sleepover;
-
-  void changeSleepover(Sleepover s) {
-    sleepover = s;
-    notifyListeners();
-  }
-
-  void deleteItem() {
-    sleepover = null;
-    notifyListeners();
-  }
-}
-
 class Transport extends Activity {
   final String source;
   final String dest;

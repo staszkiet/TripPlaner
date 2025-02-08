@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:tripplaner/todo_list.dart';
-import 'package:tripplaner/trip.dart';
-import 'package:tripplaner/day_activities.dart';
-import 'package:tripplaner/day.dart';
+import 'package:tripplaner/models/trip.dart';
+import 'package:tripplaner/models/activities.dart';
+import 'package:tripplaner/models/todo_element.dart';
+import 'package:tripplaner/models/day.dart';
+import 'package:tripplaner/models/uploaded_photo.dart';
 
 UserCredential? uc;
 

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:tripplaner/activity_creation_forms.dart';
-import 'package:tripplaner/day_activities.dart';
-import 'package:tripplaner/trip.dart';
-import 'package:tripplaner/day.dart';
-import 'package:tripplaner/directions_repository.dart';
+import 'package:tripplaner/models/activities.dart';
+import 'package:tripplaner/models/trip.dart';
+import 'package:tripplaner/services/maps/directions_repository.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tripplaner/firestore.dart';
+import 'package:tripplaner/services/firestore/firestore.dart';
+import 'package:tripplaner/models/day.dart';
+import 'package:tripplaner/screens/forms/attraction_creation_form.dart';
+import 'package:tripplaner/screens/forms/sleepover_creation_form.dart';
+import 'package:tripplaner/screens/forms/transport_creation_form.dart';
 
 class CustomMarker extends Marker {
   final Activity? activity;

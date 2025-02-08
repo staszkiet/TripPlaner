@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tripplaner/trip.dart';
+import 'package:tripplaner/models/trip.dart';
 
 class TripCreationForm extends StatefulWidget {
   const TripCreationForm({super.key});

@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:tripplaner/firestore.dart';
-import 'package:tripplaner/trip.dart';
-import 'package:tripplaner/trip_creation_form.dart';
-import 'package:tripplaner/trip_page.dart';
+import 'package:tripplaner/services/firestore/firestore.dart';
+import 'package:tripplaner/models/trip.dart';
+import 'package:tripplaner/screens/forms/trip_creation_form.dart';
+import 'package:tripplaner/screens/trip_details_screen/trip_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tripplaner/day.dart';
-import 'package:tripplaner/auth_page.dart';
+import 'package:tripplaner/models/day.dart';
+import 'package:tripplaner/screens/authentication/login_screen.dart';
 
 class TripListPage extends StatelessWidget {
   const TripListPage({super.key});

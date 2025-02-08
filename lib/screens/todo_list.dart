@@ -1,27 +1,9 @@
-import 'package:tripplaner/firestore.dart';
+import 'package:tripplaner/services/firestore/firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:tripplaner/notifications.dart';
+import 'package:tripplaner/services/notifications/notifications.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
-
-class ToDoElement {
-  final String description;
-  int notificationID;
-  String id = "";
-  ToDoElement(
-      {required this.description, this.id = "", this.notificationID = -1});
-
-  factory ToDoElement.fromJson(Map<String, dynamic> json, String id) {
-    return ToDoElement(
-        description: json['description'],
-        notificationID: json["notificationID"],
-        id: id);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {"description": description, "notificationID": notificationID};
-  }
-}
+import 'package:tripplaner/models/todo_element.dart';
 
 class ToDoListPage extends StatefulWidget {
   const ToDoListPage({super.key, required this.tripId});
