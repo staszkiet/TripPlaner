@@ -1,19 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:tripplaner/tripListPage.dart';
-import 'package:tripplaner/globalProviders.dart';
-void main() {
-  runApp(const GlobalProviders( child:MyApp() ));
+import 'package:tripplaner/screens/authentication/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'services/firestore/firebase_options.dart';
+import 'package:tripplaner/services/notifications/notifications.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseFirestore.instance.settings =
+      const Settings(persistenceEnabled: true);
+  NotificationManager.initialize();
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: TripListPage(),
+    return MaterialApp(
+      theme: ThemeData(
+          elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white))),
+      home: LoginForm(),
     );
   }
 }
-
